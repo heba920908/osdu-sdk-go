@@ -10,11 +10,21 @@ https://community.opengroup.org/osdu/platform/security-and-compliance/entitlemen
 */
 
 func DefaultEntitlementsBootstrapUsers() []EntitlementsBoostrapUser {
+	extra_service_principals := []string{
+		"datafier@service.local",
+		"osdu-admin@service.local",
+	}
+
+	/*
+	  These should match the file groups in entitlements service for core-plus
+	  https://community.opengroup.org/osdu/platform/security-and-compliance/entitlements/-/tree/ce11b9780cc2130f939cbe1811511e58cb674d89/entitlements-v2-core-plus/src/main/resources/provisioning/accounts
+	  i.e groups_of_<>.json
+	*/
+
 	m := make(map[string]string)
-	m["SERVICE_PRINCIPAL"] = "osdu-admin@service.local"
 	m["SERVICE_PRINCIPAL_AIRFLOW"] = "airflow@service.local"
 	m["SERVICE_PRINCIPAL_INDEXER"] = "indexer@service.local"
-	m["SERVICE_PRINCIPAL_GCZ_TRANSFORMER"] = "gcz-transformer@service.local"
+	m["SERVICE_PRINCIPAL_GCZ"] = "gcz-transformer@service.local"
 	m["SERVICE_PRINCIPAL_REGISTER"] = "register@service.local"
 	m["SERVICE_PRINCIPAL_NOTIFICATION"] = "notification@service.local"
 	m["SERVICE_PRINCIPAL_STORAGE"] = "storage@service.local"
@@ -28,5 +38,13 @@ func DefaultEntitlementsBootstrapUsers() []EntitlementsBoostrapUser {
 			UserId:  v,
 		})
 	}
+
+	for _, sp := range extra_service_principals {
+		bootstrap_users = append(bootstrap_users, EntitlementsBoostrapUser{
+			AliasId: "SERVICE_PRINCIPAL",
+			UserId:  sp,
+		})
+	}
+
 	return bootstrap_users
 }
