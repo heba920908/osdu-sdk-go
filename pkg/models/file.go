@@ -1,11 +1,13 @@
 package models
 
 type FileGetSignedUrlResponse struct {
-	FileID   string `json:"FileID"`
-	Location struct {
-		SignedURL  string `json:"SignedURL"`
-		FileSource string `json:"FileSource"`
-	} `json:"Location"`
+	FileID               string `json:"FileID"`
+	FileResponseLocation `json:"Location"`
+}
+
+type FileResponseLocation struct {
+	SignedURL  string `json:"SignedURL"`
+	FileSource string `json:"FileSource"`
 }
 
 type FileGetDownloadUrlResponse struct {
