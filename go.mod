@@ -1,6 +1,6 @@
 module github.com/heba920908/osdu-sdk-go
 
-go 1.22.7
+go 1.23
 
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
