@@ -21,7 +21,9 @@ func (a OsduApiRequest) RegisterPartition(partition models.Partition, is_system 
 	post_partition_url := fmt.Sprintf("%s/partitions/%s", a.OsduSettings.PartitionUrl, partition_id)
 
 	if is_system {
-		post_partition_url = fmt.Sprintf("%s/partition/system", a.OsduSettings.PartitionUrl)
+		post_partition_url = fmt.Sprintf("%s/partitions/system", a.OsduSettings.PartitionUrl)
+		// Looks that this endpoint got deprecated
+		// post_partition_url = fmt.Sprintf("%s/partition/system", a.OsduSettings.PartitionUrl)
 	}
 
 	json_content, err := json.Marshal(partition)
