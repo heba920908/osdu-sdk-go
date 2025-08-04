@@ -54,11 +54,12 @@ type PartitionProperties struct {
 	ObmMinioExternalEndpoint      PartitionProperty `json:"obm.minio.external.endpoint"`
 	WellboreDmsBucket             PartitionProperty `json:"wellbore-dms-bucket"`
 	ReservoirConnection           PartitionProperty `json:"reservoir-connection"`
-	SlbFeatureAggregateApi        PartitionProperty `json:"slb-feature-aggregate-api,omitempty"`
 	FeatureFlagOpaEnabled         PartitionProperty `json:"featureFlag.opa.enabled"`
 	LegalBucketName               PartitionProperty `json:"legal.bucket.name"`
 	StorageBucketName             PartitionProperty `json:"storage.bucket.name"`
 	SchemaBucketName              PartitionProperty `json:"schema.bucket.name"`
+	FileStagingLocation           PartitionProperty `json:"file.staging.location,omitempty"`
+	FilePersistenLocation         PartitionProperty `json:"file.persistent.location,omitempty"`
 	// Needed by system partition
 	EntitlementsDatasourceUrl      PartitionProperty `json:"entitlements.datasource.url"`
 	EntitlementsDatasourceUsername PartitionProperty `json:"entitlements.datasource.username"`
@@ -201,9 +202,6 @@ func GetDefaultPartitionPropertiesCI(partition_id string) PartitionProperties {
 
 	root.ReservoirConnection.Value = "POSTGRESQL_CONN_STRING"
 	root.ReservoirConnection.Sensitive = true
-
-	root.SlbFeatureAggregateApi.Value = "true"
-	root.SlbFeatureAggregateApi.Sensitive = false
 
 	root.FeatureFlagOpaEnabled.Value = "false"
 	root.FeatureFlagOpaEnabled.Sensitive = false
