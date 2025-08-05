@@ -212,9 +212,6 @@ func GetDefaultPartitionPropertiesCI(partition_id string) PartitionProperties {
 	root.ReservoirConnection.Value = "POSTGRESQL_CONN_STRING"
 	root.ReservoirConnection.Sensitive = true
 
-	root.FeatureFlagOpaEnabled.Value = "false"
-	root.FeatureFlagOpaEnabled.Sensitive = false
-
 	/*
 	  Default bucket naming convention
 	*/
