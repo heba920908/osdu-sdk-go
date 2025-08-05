@@ -43,12 +43,18 @@ type PartitionProperties struct {
 	OqmRabbitmqAdminPath          PartitionProperty `json:"oqm.rabbitmq.admin.path"`
 	OqmRabbitmqAdminUsername      PartitionProperty `json:"oqm.rabbitmq.admin.username"`
 	OqmRabbitmqAdminPassword      PartitionProperty `json:"oqm.rabbitmq.admin.password"`
-	ElasticsearchHost             PartitionProperty `json:"elasticsearch.host"`
-	ElasticsearchPort             PartitionProperty `json:"elasticsearch.port"`
-	ElasticsearchUser             PartitionProperty `json:"elasticsearch.user"`
-	ElasticsearchPassword         PartitionProperty `json:"elasticsearch.password"`
-	ElasticsearchHttps            PartitionProperty `json:"elasticsearch.https"`
-	ElasticsearchTls              PartitionProperty `json:"elasticsearch.tls"`
+	ElasticsearchHost             PartitionProperty `json:"elasticsearch.8.host"`
+	ElasticsearchPort             PartitionProperty `json:"elasticsearch.8.port"`
+	ElasticsearchUser             PartitionProperty `json:"elasticsearch.8.user"`
+	ElasticsearchPassword         PartitionProperty `json:"elasticsearch.8.password"`
+	ElasticsearchHttps            PartitionProperty `json:"elasticsearch.8.https"`
+	ElasticsearchTls              PartitionProperty `json:"elasticsearch.8.tls"`
+	ElasticsearchSevenHost        PartitionProperty `json:"elasticsearch.host,omitempty"`
+	ElasticsearchSevenPort        PartitionProperty `json:"elasticsearch.port,omitempty"`
+	ElasticsearchSevenUser        PartitionProperty `json:"elasticsearch.user,omitempty"`
+	ElasticsearchSevenPassword    PartitionProperty `json:"elasticsearch.password,omitempty"`
+	ElasticsearchSevenHttps       PartitionProperty `json:"elasticsearch.https,omitempty"`
+	ElasticsearchSevenTls         PartitionProperty `json:"elasticsearch.tls,omitempty"`
 	IndexAugmenterEnabled         PartitionProperty `json:"index-augmenter-enabled"`
 	PolicyServiceEnabled          PartitionProperty `json:"policy-service-enabled"`
 	ObmMinioExternalEndpoint      PartitionProperty `json:"obm.minio.external.endpoint"`
