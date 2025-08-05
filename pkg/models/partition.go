@@ -56,12 +56,11 @@ type PartitionProperties struct {
 	ElasticsearchSevenHttps       PartitionProperty `json:"elasticsearch.https,omitempty"`
 	ElasticsearchSevenTls         PartitionProperty `json:"elasticsearch.tls,omitempty"`
 	IndexAugmenterEnabled         PartitionProperty `json:"index-augmenter-enabled"`
-	PolicyServiceEnabled          PartitionProperty `json:"featureFlag.policy.enabled"`
-	OpaEnabled                    PartitionProperty `json:"featureFlag.opa.enabled"`
+	FeatureFlagPolicyEnabled      PartitionProperty `json:"featureFlag.policy.enabled"`
+	FeatureFlagOpaEnabled         PartitionProperty `json:"featureFlag.opa.enabled"`
 	ObmMinioExternalEndpoint      PartitionProperty `json:"obm.minio.external.endpoint"`
 	WellboreDmsBucket             PartitionProperty `json:"wellbore-dms-bucket"`
 	ReservoirConnection           PartitionProperty `json:"reservoir-connection"`
-	FeatureFlagOpaEnabled         PartitionProperty `json:"featureFlag.opa.enabled"`
 	LegalBucketName               PartitionProperty `json:"legal.bucket.name"`
 	StorageBucketName             PartitionProperty `json:"storage.bucket.name"`
 	SchemaBucketName              PartitionProperty `json:"schema.bucket.name"`
@@ -186,11 +185,11 @@ func GetDefaultPartitionPropertiesCI(partition_id string) PartitionProperties {
 	root.IndexAugmenterEnabled.Value = "false"
 	root.IndexAugmenterEnabled.Sensitive = false
 
-	root.PolicyServiceEnabled.Value = "false"
-	root.PolicyServiceEnabled.Sensitive = false
+	root.FeatureFlagPolicyEnabled.Value = "false"
+	root.FeatureFlagPolicyEnabled.Sensitive = false
 
-	root.OpaEnabled.Value = "false"
-	root.OpaEnabled.Sensitive = false
+	root.FeatureFlagOpaEnabled.Value = "false"
+	root.FeatureFlagOpaEnabled.Sensitive = false
 
 	root.ObmMinioExternalEndpoint.Value = "${}"
 	root.ObmMinioExternalEndpoint.Sensitive = false
