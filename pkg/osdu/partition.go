@@ -18,10 +18,10 @@ func (a OsduApiRequest) RegisterPartition(partition models.Partition, is_system 
 	ctx := context.WithValue(a.Context(), OsduApi, "register_partition")
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	post_partition_url := fmt.Sprintf("%s/partitions/%s", a.OsduSettings.PartitionUrl, partition_id)
+	post_partition_url := fmt.Sprintf("%s/partitions/%s", a.osduSettings.PartitionUrl, partition_id)
 
 	if is_system {
-		post_partition_url = fmt.Sprintf("%s/partitions/system", a.OsduSettings.PartitionUrl)
+		post_partition_url = fmt.Sprintf("%s/partitions/system", a.osduSettings.PartitionUrl)
 		// Looks that this endpoint got deprecated
 		// post_partition_url = fmt.Sprintf("%s/partition/system", a.OsduSettings.PartitionUrl)
 	}
@@ -32,8 +32,8 @@ func (a OsduApiRequest) RegisterPartition(partition models.Partition, is_system 
 	}
 
 	j, _ := json.MarshalIndent(partition, "", "  ")
-	slog.InfoContext(ctx, "Partition Properties:")
-	slog.InfoContext(ctx, string(j))
+	slog.InfoContext(ctx, "Registering partition ---")
+	slog.DebugContext(ctx, string(j))
 
 	req, _ := http.NewRequest("POST", post_partition_url, bytes.NewBuffer([]byte(json_content)))
 	/* Partition from internal service does not need to use headers */
@@ -82,7 +82,7 @@ func (a OsduApiRequest) _clean_up_partition(partitionid string) error {
 	ctx := context.WithValue(a.Context(), OsduApi, "cleanup_partition")
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	delete_partition_url := fmt.Sprintf("%s/partitions/%s", a.OsduSettings.PartitionUrl, partitionid)
+	delete_partition_url := fmt.Sprintf("%s/partitions/%s", a.osduSettings.PartitionUrl, partitionid)
 
 	req, _ := http.NewRequest(http.MethodDelete, delete_partition_url, nil)
 	headers, _ := a._build_headers_without_partition()

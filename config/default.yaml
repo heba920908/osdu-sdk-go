@@ -1,16 +1,17 @@
 osdu:
+  provider: openid # can be also Azure (Using sdk/azidentity)
   auth:
     ## export OSDU_AUTH_CLIENT_ID
     clientId: datafier
     ## export OSDU_AUTH_CLIENT_SECRET
     clientSecret: ""
     scopes: openid
-    tokenUrl: https://keycloak.baremetal-dev00.epm-osdu.projects.epam.com/realms/osdu/protocol/openid-connect/token
+    tokenUrl: https://keycloak/realms/osdu/protocol/openid-connect/token
     grantType: client_credentials
     internal: false
   client:
-    partitionUrl: https://osdu.baremetal-dev00.epm-osdu.projects.epam.com/api/partition/v1
-    entitlementsUrl: https://osdu.baremetal-dev00.epm-osdu.projects.epam.com/api/entitlements/v2
+    partitionUrl: https://osdu/api/partition/v1
+    entitlementsUrl: https://osdu/api/entitlements/v2
     entitlementsDomain: group
     partitionId: opendes
     partitionOverrides: ""

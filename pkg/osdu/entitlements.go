@@ -29,7 +29,7 @@ func (a OsduApiRequest) EntitlementsBootstrap() error {
 	ctx := context.WithValue(a.Context(), OsduApi, "entitlements.go")
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	bootstrap_url := fmt.Sprintf("%s/tenant-provisioning", a.OsduSettings.EntitlementsUrl)
+	bootstrap_url := fmt.Sprintf("%s/tenant-provisioning", a.osduSettings.EntitlementsUrl)
 	boostrap_request := EntitlementsBootstrapRequest{
 		AliasMappings: models.DefaultEntitlementsBootstrapUsers(),
 	}
@@ -104,10 +104,10 @@ func (a OsduApiRequest) CreateEntitlementsAdminUser(user_email string) error {
 		func() error {
 			for _, group := range entitlement_groups {
 				entitlements_url := fmt.Sprintf("%s/groups/%s@%s.%s/members",
-					a.OsduSettings.EntitlementsUrl,
+					a.osduSettings.EntitlementsUrl,
 					group,
-					a.OsduSettings.PartitionId,
-					a.OsduSettings.EntitlementsDomain)
+					a.osduSettings.PartitionId,
+					a.osduSettings.EntitlementsDomain)
 				req, _ := http.NewRequest("POST", entitlements_url, bytes.NewBuffer([]byte(json_content)))
 				slog.InfoContext(ctx, fmt.Sprintf("[CreateEntitlementsAdminUser] POST: %s", entitlements_url))
 				req.Header = headers

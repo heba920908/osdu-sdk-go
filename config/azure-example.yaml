@@ -1,0 +1,43 @@
+osdu:
+  provider: azure # Set to "azure" to use Azure authentication
+  auth:
+    ## Azure AD Settings for Service Principal Authentication
+    ## export OSDU_AUTH_CLIENT_ID
+    clientId: "your-app-id"
+    ## export OSDU_AUTH_CLIENT_SECRET  
+    clientSecret: "your-client-secret"
+    ## export OSDU_AUTH_TENANT_ID
+    tenantId: "your-tenant-id"
+    scopes: "https://graph.microsoft.com/.default"  # or your custom scope
+    grantType: client_credentials
+    internal: false
+    
+    ## Azure Pod Identity / Managed Identity Settings
+    podAuthEnabled: false  # Set to true to use Azure Managed Identity
+    
+    ## OAuth2 Fallback Settings (when not using Pod Auth)
+    tokenUrl: "https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/token"
+    
+  client:
+    partitionUrl: https://osdu/api/partition/v1
+    entitlementsUrl: https://osdu/api/entitlements/v2
+    entitlementsDomain: group
+    partitionId: opendes
+    partitionOverrides: ""
+
+---
+# Example for Pod Identity / Managed Identity (Azure AKS)
+osdu:
+  provider: azure
+  auth:
+    podAuthEnabled: true   # Enable Azure Managed Identity
+    tenantId: "your-tenant-id"
+    scopes: "https://management.azure.com/.default"
+    internal: false
+    
+  client:
+    partitionUrl: https://osdu/api/partition/v1
+    entitlementsUrl: https://osdu/api/entitlements/v2
+    entitlementsDomain: group
+    partitionId: opendes
+    partitionOverrides: ""
