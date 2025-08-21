@@ -130,3 +130,22 @@ func (a OsduApiRequest) _build_headers_without_partition() (http.Header, error) 
 		"Authorization": {fmt.Sprintf("Bearer %s", token.AccessToken)},
 	}, nil
 }
+
+// HttpRequestWithoutPartition makes an HTTP request without the data-partition-id header
+func (a OsduApiRequest) HttpRequestWithoutPartition(method, url string, body []byte) (*http.Response, error) {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	headers, err := a._build_headers_without_partition()
+	if err != nil {
+		return nil, err
+	}
+	req.Header = headers
+
+	client := http.Client{}
+	return client.Do(req)
+}
