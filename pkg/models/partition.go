@@ -16,62 +16,103 @@ type Partition struct {
 }
 
 type PartitionProperties struct {
-	ProjectId                     PartitionProperty `json:"projectId"`
-	ServiceAccount                PartitionProperty `json:"serviceAccount"`
-	ComplianceRuleSet             PartitionProperty `json:"complianceRuleSet"`
-	DataPartitionId               PartitionProperty `json:"dataPartitionId"`
-	Name                          PartitionProperty `json:"name"`
-	Bucket                        PartitionProperty `json:"bucket"`
-	CrmAccountID                  PartitionProperty `json:"crmAccountID"`
-	OsmPostgresDatasourceUrl      PartitionProperty `json:"osm.postgres.datasource.url"`
-	OsmPostgresDatasourceUsername PartitionProperty `json:"osm.postgres.datasource.username"`
-	OsmPostgresDatasourcePassword PartitionProperty `json:"osm.postgres.datasource.password"`
-	ObmMinioEndpoint              PartitionProperty `json:"obm.minio.endpoint"`
-	ObmMinioAccessKey             PartitionProperty `json:"obm.minio.accessKey"`
-	ObmMinioSecretKey             PartitionProperty `json:"obm.minio.secretKey"`
-	ObmMinioIgnoreCertCheck       PartitionProperty `json:"obm.minio.ignoreCertCheck"`
-	ObmMinioUiEndpoint            PartitionProperty `json:"obm.minio.ui.endpoint"`
-	KubernetesSecretName          PartitionProperty `json:"kubernetes-secret-name"`
-	OqmRabbitmqAmqpHost           PartitionProperty `json:"oqm.rabbitmq.amqp.host"`
-	OqmRabbitmqAmqpPort           PartitionProperty `json:"oqm.rabbitmq.amqp.port"`
-	OqmRabbitmqAmqpPath           PartitionProperty `json:"oqm.rabbitmq.amqp.path"`
-	OqmRabbitmqAmqpUsername       PartitionProperty `json:"oqm.rabbitmq.amqp.username"`
-	OqmRabbitmqAmqpPassword       PartitionProperty `json:"oqm.rabbitmq.amqp.password"`
-	OqmRabbitmqAdminSchema        PartitionProperty `json:"oqm.rabbitmq.admin.schema"`
-	OqmRabbitmqAdminHost          PartitionProperty `json:"oqm.rabbitmq.admin.host"`
-	OqmRabbitmqAdminPort          PartitionProperty `json:"oqm.rabbitmq.admin.port"`
-	OqmRabbitmqAdminPath          PartitionProperty `json:"oqm.rabbitmq.admin.path"`
-	OqmRabbitmqAdminUsername      PartitionProperty `json:"oqm.rabbitmq.admin.username"`
-	OqmRabbitmqAdminPassword      PartitionProperty `json:"oqm.rabbitmq.admin.password"`
-	ElasticsearchHost             PartitionProperty `json:"elasticsearch.8.host"`
-	ElasticsearchPort             PartitionProperty `json:"elasticsearch.8.port"`
-	ElasticsearchUser             PartitionProperty `json:"elasticsearch.8.user"`
-	ElasticsearchPassword         PartitionProperty `json:"elasticsearch.8.password"`
-	ElasticsearchHttps            PartitionProperty `json:"elasticsearch.8.https"`
-	ElasticsearchTls              PartitionProperty `json:"elasticsearch.8.tls"`
+	/*
+	  Known properties for CI implementation
+	*/
+	ProjectId                     PartitionProperty `json:"projectId,omitempty"`
+	ServiceAccount                PartitionProperty `json:"serviceAccount,omitempty"`
+	ComplianceRuleSet             PartitionProperty `json:"complianceRuleSet,omitempty"`
+	DataPartitionId               PartitionProperty `json:"dataPartitionId,omitempty"`
+	Name                          PartitionProperty `json:"name,omitempty"`
+	Bucket                        PartitionProperty `json:"bucket,omitempty"`
+	CrmAccountID                  PartitionProperty `json:"crmAccountID,omitempty"`
+	OsmPostgresDatasourceUrl      PartitionProperty `json:"osm.postgres.datasource.url,omitempty"`
+	OsmPostgresDatasourceUsername PartitionProperty `json:"osm.postgres.datasource.username,omitempty"`
+	OsmPostgresDatasourcePassword PartitionProperty `json:"osm.postgres.datasource.password,omitempty"`
+	ObmMinioEndpoint              PartitionProperty `json:"obm.minio.endpoint,omitempty"`
+	ObmMinioAccessKey             PartitionProperty `json:"obm.minio.accessKey,omitempty"`
+	ObmMinioSecretKey             PartitionProperty `json:"obm.minio.secretKey,omitempty"`
+	ObmMinioIgnoreCertCheck       PartitionProperty `json:"obm.minio.ignoreCertCheck,omitempty"`
+	ObmMinioUiEndpoint            PartitionProperty `json:"obm.minio.ui.endpoint,omitempty"`
+	KubernetesSecretName          PartitionProperty `json:"kubernetes-secret-name,omitempty"`
+	OqmRabbitmqAmqpHost           PartitionProperty `json:"oqm.rabbitmq.amqp.host,omitempty"`
+	OqmRabbitmqAmqpPort           PartitionProperty `json:"oqm.rabbitmq.amqp.port,omitempty"`
+	OqmRabbitmqAmqpPath           PartitionProperty `json:"oqm.rabbitmq.amqp.path,omitempty"`
+	OqmRabbitmqAmqpUsername       PartitionProperty `json:"oqm.rabbitmq.amqp.username,omitempty"`
+	OqmRabbitmqAmqpPassword       PartitionProperty `json:"oqm.rabbitmq.amqp.password,omitempty"`
+	OqmRabbitmqAdminSchema        PartitionProperty `json:"oqm.rabbitmq.admin.schema,omitempty"`
+	OqmRabbitmqAdminHost          PartitionProperty `json:"oqm.rabbitmq.admin.host,omitempty"`
+	OqmRabbitmqAdminPort          PartitionProperty `json:"oqm.rabbitmq.admin.port,omitempty"`
+	OqmRabbitmqAdminPath          PartitionProperty `json:"oqm.rabbitmq.admin.path,omitempty"`
+	OqmRabbitmqAdminUsername      PartitionProperty `json:"oqm.rabbitmq.admin.username,omitempty"`
+	OqmRabbitmqAdminPassword      PartitionProperty `json:"oqm.rabbitmq.admin.password,omitempty"`
+	ElasticsearchHost             PartitionProperty `json:"elasticsearch.8.host,omitempty"`
+	ElasticsearchPort             PartitionProperty `json:"elasticsearch.8.port,omitempty"`
+	ElasticsearchUser             PartitionProperty `json:"elasticsearch.8.user,omitempty"`
+	ElasticsearchPassword         PartitionProperty `json:"elasticsearch.8.password,omitempty"`
+	ElasticsearchHttps            PartitionProperty `json:"elasticsearch.8.https,omitempty"`
+	ElasticsearchTls              PartitionProperty `json:"elasticsearch.8.tls,omitempty"`
 	ElasticsearchSevenHost        PartitionProperty `json:"elasticsearch.host,omitempty"`
 	ElasticsearchSevenPort        PartitionProperty `json:"elasticsearch.port,omitempty"`
 	ElasticsearchSevenUser        PartitionProperty `json:"elasticsearch.user,omitempty"`
 	ElasticsearchSevenPassword    PartitionProperty `json:"elasticsearch.password,omitempty"`
 	ElasticsearchSevenHttps       PartitionProperty `json:"elasticsearch.https,omitempty"`
 	ElasticsearchSevenTls         PartitionProperty `json:"elasticsearch.tls,omitempty"`
-	IndexAugmenterEnabled         PartitionProperty `json:"index-augmenter-enabled"`
-	FeatureFlagPolicyEnabled      PartitionProperty `json:"featureFlag.policy.enabled"`
-	FeatureFlagOpaEnabled         PartitionProperty `json:"featureFlag.opa.enabled"`
-	ObmMinioExternalEndpoint      PartitionProperty `json:"obm.minio.external.endpoint"`
-	WellboreDmsBucket             PartitionProperty `json:"wellbore-dms-bucket"`
-	ReservoirConnection           PartitionProperty `json:"reservoir-connection"`
-	LegalBucketName               PartitionProperty `json:"legal.bucket.name"`
-	StorageBucketName             PartitionProperty `json:"storage.bucket.name"`
-	SchemaBucketName              PartitionProperty `json:"schema.bucket.name"`
+	IndexAugmenterEnabled         PartitionProperty `json:"index-augmenter-enabled,omitempty"`
+	FeatureFlagPolicyEnabled      PartitionProperty `json:"featureFlag.policy.enabled,omitempty"`
+	FeatureFlagOpaEnabled         PartitionProperty `json:"featureFlag.opa.enabled,omitempty"`
+	ObmMinioExternalEndpoint      PartitionProperty `json:"obm.minio.external.endpoint,omitempty"`
+	WellboreDmsBucket             PartitionProperty `json:"wellbore-dms-bucket,omitempty"`
+	ReservoirConnection           PartitionProperty `json:"reservoir-connection,omitempty"`
+	LegalBucketName               PartitionProperty `json:"legal.bucket.name,omitempty"`
+	StorageBucketName             PartitionProperty `json:"storage.bucket.name,omitempty"`
+	SchemaBucketName              PartitionProperty `json:"schema.bucket.name,omitempty"`
 	FileStagingLocation           PartitionProperty `json:"file.staging.location,omitempty"`
 	FilePersistenLocation         PartitionProperty `json:"file.persistent.location,omitempty"`
 	// Needed by system partition
-	EntitlementsDatasourceUrl      PartitionProperty `json:"entitlements.datasource.url"`
-	EntitlementsDatasourceUsername PartitionProperty `json:"entitlements.datasource.username"`
-	EntitlementsDatasourcePassword PartitionProperty `json:"entitlements.datasource.password"`
-	EntitlementsDatasourceSchema   PartitionProperty `json:"entitlements.datasource.schema"`
-	SystemSchemaBucketName         PartitionProperty `json:"system.schema.bucket.name"`
+	EntitlementsDatasourceUrl      PartitionProperty `json:"entitlements.datasource.url,omitempty"`
+	EntitlementsDatasourceUsername PartitionProperty `json:"entitlements.datasource.username,omitempty"`
+	EntitlementsDatasourcePassword PartitionProperty `json:"entitlements.datasource.password,omitempty"`
+	EntitlementsDatasourceSchema   PartitionProperty `json:"entitlements.datasource.schema,omitempty"`
+	SystemSchemaBucketName         PartitionProperty `json:"system.schema.bucket.name,omitempty"`
+
+	/*
+	  Known properties for azure
+	*/
+	ComplianceRuleset                         PartitionProperty `json:"compliance-ruleset,omitempty"`
+	ElasticSevenEndpoint                      PartitionProperty `json:"elastic-endpoint,omitempty"`
+	ElasticSevenUsername                      PartitionProperty `json:"elastic-username,omitempty"`
+	ElasticSevenPassword                      PartitionProperty `json:"elastic-password,omitempty"`
+	ElasticSevenSslEnabled                    PartitionProperty `json:"elastic-ssl-enabled,omitempty"`
+	CosmosConnection                          PartitionProperty `json:"cosmos-connection,omitempty"`
+	CosmosEndpoint                            PartitionProperty `json:"cosmos-endpoint,omitempty"`
+	CosmosPrimaryKey                          PartitionProperty `json:"cosmos-primary-key,omitempty"`
+	SbConnection                              PartitionProperty `json:"sb-connection,omitempty"`
+	SbNamespace                               PartitionProperty `json:"sb-namespace,omitempty"`
+	StorageAccountKey                         PartitionProperty `json:"storage-account-key,omitempty"`
+	StorageAccountName                        PartitionProperty `json:"storage-account-name,omitempty"`
+	StorageAccountBlobEndpoint                PartitionProperty `json:"storage-account-blob-endpoint,omitempty"`
+	IngestStorageAccountName                  PartitionProperty `json:"ingest-storage-account-name,omitempty"`
+	IngestStorageAccountKey                   PartitionProperty `json:"ingest-storage-account-key,omitempty"`
+	HierarchicalStorageAccountName            PartitionProperty `json:"hierarchical-storage-account-name,omitempty"`
+	HierarchicalStorageAccountKey             PartitionProperty `json:"hierarchical-storage-account-key,omitempty"`
+	EventgridRecordstopic                     PartitionProperty `json:"eventgrid-recordstopic,omitempty"`
+	EventgridRecordstopicAccesskey            PartitionProperty `json:"eventgrid-recordstopic-accesskey,omitempty"`
+	EventgridLegaltagschangedtopic            PartitionProperty `json:"eventgrid-legaltagschangedtopic,omitempty"`
+	EventgridLegaltagschangedtopicAccesskey   PartitionProperty `json:"eventgrid-legaltagschangedtopic-accesskey,omitempty"`
+	EventgridResourcegroup                    PartitionProperty `json:"eventgrid-resourcegroup,omitempty"`
+	EncryptionKeyIdentifier                   PartitionProperty `json:"encryption-key-identifier,omitempty"`
+	SdmsStorageAccountName                    PartitionProperty `json:"sdms-storage-account-name,omitempty"`
+	SdmsStorageAccountKey                     PartitionProperty `json:"sdms-storage-account-key,omitempty"`
+	EventgridSchemanotificationtopic          PartitionProperty `json:"eventgrid-schemanotificationtopic,omitempty"`
+	EventgridSchemanotificationtopicAccesskey PartitionProperty `json:"eventgrid-schemanotificationtopic-accesskey,omitempty"`
+	EventgridGsmtopic                         PartitionProperty `json:"eventgrid-gsmtopic,omitempty"`
+	EventgridGsmtopicAccesskey                PartitionProperty `json:"eventgrid-gsmtopic-accesskey,omitempty"`
+	EventgridStatuschangedtopic               PartitionProperty `json:"eventgrid-statuschangedtopic,omitempty"`
+	EventgridStatuschangedtopicAccesskey      PartitionProperty `json:"eventgrid-statuschangedtopic-accesskey,omitempty"`
+	EventgridSchemachangedtopic               PartitionProperty `json:"eventgrid-schemachangedtopic,omitempty"`
+	EventgridSchemachangedtopicAccesskey      PartitionProperty `json:"eventgrid-schemachangedtopic-accesskey,omitempty"`
+	IndexerDecimationEnabled                  PartitionProperty `json:"indexer-decimation-enabled,omitempty"`
 }
 
 func GetDefaultPartitionPropertiesCI(partition_id string) PartitionProperties {
