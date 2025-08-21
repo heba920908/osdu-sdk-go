@@ -148,12 +148,8 @@ func TestPutSystemSchema_AuthenticationFailure(t *testing.T) {
 		SchemaUrl:   server.URL,
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with failing auth provider
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 
 	// Create test schema payload
 	schemaPayload := []byte(`{
@@ -241,11 +237,7 @@ func createMockSchemaClient(schemaURL string) (osdu.OsduApiRequest, *MockAuthPro
 		SchemaUrl:   schemaURL,
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with mock provider and test settings
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 	return client, mockAuth
 }

@@ -24,7 +24,6 @@ const (
 type OsduApiRequest struct {
 	authProvider auth.AuthProvider
 	osduSettings config.OsduSettings
-	authSettings config.AuthSettings
 }
 
 // NewClient creates a new OSDU API client with the appropriate authentication provider
@@ -48,28 +47,24 @@ func NewClient() OsduApiRequest {
 	return OsduApiRequest{
 		authProvider: authProvider,
 		osduSettings: osduSettings,
-		authSettings: authSettings,
 	}
 }
 
 // NewClientWithProvider creates a new OSDU API client with a specific authentication provider
 func NewClientWithProvider(provider auth.AuthProvider) OsduApiRequest {
 	osduSettings, _ := config.GetOsduSettings()
-	authSettings, _ := config.GetAuthSettings()
 
 	return OsduApiRequest{
 		authProvider: provider,
 		osduSettings: osduSettings,
-		authSettings: authSettings,
 	}
 }
 
 // NewClientWithConfig creates a new OSDU API client with custom settings for testing
-func NewClientWithConfig(provider auth.AuthProvider, osduSettings config.OsduSettings, authSettings config.AuthSettings) OsduApiRequest {
+func NewClientWithConfig(provider auth.AuthProvider, osduSettings config.OsduSettings) OsduApiRequest {
 	return OsduApiRequest{
 		authProvider: provider,
 		osduSettings: osduSettings,
-		authSettings: authSettings,
 	}
 }
 
@@ -111,18 +106,19 @@ func (a OsduApiRequest) _build_headers_with_partition() (http.Header, error) {
 }
 
 func (a OsduApiRequest) _build_headers_without_partition() (http.Header, error) {
-	if a.authSettings.InternalService {
-		ctx := context.Background()
-		slog.InfoContext(ctx, "Internal service setup, skipping token generation")
-		return http.Header{
-			"Content-Type": {"application/json"},
-		}, nil
-	}
-
 	token, err := a.authProvider.GetAccessToken(a.Context())
 	if err != nil {
 		log.Println(err)
 		return http.Header{}, err
+	}
+
+	// If no access token is provided (empty), return headers without authorization
+	if token == nil || token.AccessToken == "" {
+		ctx := context.Background()
+		slog.InfoContext(ctx, "No access token provided, proceeding without authorization")
+		return http.Header{
+			"Content-Type": {"application/json"},
+		}, nil
 	}
 
 	return http.Header{

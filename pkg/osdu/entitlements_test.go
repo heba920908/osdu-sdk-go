@@ -261,11 +261,7 @@ func createMockEntitlementsClient(entitlementsURL string) (osdu.OsduApiRequest, 
 		EntitlementsDomain: "", // Empty domain for testing
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with mock provider and test settings
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 	return client, mockAuth
 }

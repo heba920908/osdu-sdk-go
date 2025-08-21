@@ -50,12 +50,8 @@ func createMockClient(partitionURL, entitlementsURL string) (osdu.OsduApiRequest
 		EntitlementsUrl: entitlementsURL,
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with mock provider and test settings
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 	return client, mockAuth
 }
 
@@ -69,11 +65,7 @@ func TestMockNewClientWithProvider(t *testing.T) {
 		EntitlementsUrl: "http://mock-entitlements",
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 
 	assert.NotNil(t, client)
 	// We can't directly access the private fields, but we can verify the client was created
@@ -92,12 +84,8 @@ func TestMockAuthenticationFailure(t *testing.T) {
 		EntitlementsUrl: "http://mock-entitlements",
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with failing auth provider
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 
 	// Create test partition
 	partitionProperties := models.GetDefaultPartitionPropertiesCI("test-partition-id")

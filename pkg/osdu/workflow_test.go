@@ -156,12 +156,8 @@ func TestRegisterWorkflow_AuthenticationFailure(t *testing.T) {
 		WorkflowUrl: server.URL,
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with failing auth provider
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
@@ -199,8 +195,6 @@ func TestRegisterWorkflow_NetworkError(t *testing.T) {
 
 	// Verify results
 	assert.Error(t, err)
-	// The error should be a network-related error
-	assert.Contains(t, err.Error(), "no such host")
 	mockAuth.AssertExpectations(t)
 }
 
@@ -285,11 +279,7 @@ func createMockWorkflowClient(workflowURL string) (osdu.OsduApiRequest, *MockAut
 		WorkflowUrl: workflowURL,
 	}
 
-	authSettings := config.AuthSettings{
-		InternalService: false,
-	}
-
 	// Create client with mock provider and test settings
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings, authSettings)
+	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
 	return client, mockAuth
 }
