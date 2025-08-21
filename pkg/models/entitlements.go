@@ -14,6 +14,11 @@ type EntitlementsAddUserRequest struct {
 	Role  string `json:"role"`
 }
 
+type EntitlementsCreateGroupRequest struct {
+	GroupName   string `json:"name"`
+	Description string `json:"description"`
+}
+
 /*
 https://community.opengroup.org/osdu/platform/security-and-compliance/entitlements/-/blob/release/0.27/provider/entitlements-v2-jdbc/bootstrap/bootstrap.sh?ref_type=heads
 */
