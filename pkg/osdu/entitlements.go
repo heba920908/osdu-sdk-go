@@ -16,21 +16,12 @@ import (
 	"github.com/heba920908/osdu-sdk-go/pkg/models"
 )
 
-type EntitlementsBootstrapRequest struct {
-	AliasMappings []models.EntitlementsBoostrapUser `json:"aliasMappings"`
-}
-
-type EntitlementsAddUserRequest struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
-}
-
 func (a OsduApiRequest) EntitlementsBootstrap() error {
 	ctx := context.WithValue(a.Context(), OsduApi, "entitlements.go")
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	bootstrap_url := fmt.Sprintf("%s/tenant-provisioning", a.osduSettings.EntitlementsUrl)
-	boostrap_request := EntitlementsBootstrapRequest{
+	boostrap_request := models.EntitlementsBootstrapRequest{
 		AliasMappings: models.DefaultEntitlementsBootstrapUsers(),
 	}
 
@@ -83,7 +74,7 @@ func (a OsduApiRequest) CreateEntitlementsAdminUser(user_email string) error {
 	slog.InfoContext(ctx, fmt.Sprintf("[CreateEntitlementsAdminUser] User: %s",
 		user_email))
 
-	add_user_request := EntitlementsAddUserRequest{
+	add_user_request := models.EntitlementsAddUserRequest{
 		Role:  "OWNER",
 		Email: user_email,
 	}

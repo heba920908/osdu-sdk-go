@@ -5,6 +5,15 @@ type EntitlementsBoostrapUser struct {
 	UserId  string `json:"userId"`
 }
 
+type EntitlementsBootstrapRequest struct {
+	AliasMappings []EntitlementsBoostrapUser `json:"aliasMappings"`
+}
+
+type EntitlementsAddUserRequest struct {
+	Email string `json:"email"`
+	Role  string `json:"role"`
+}
+
 /*
 https://community.opengroup.org/osdu/platform/security-and-compliance/entitlements/-/blob/release/0.27/provider/entitlements-v2-jdbc/bootstrap/bootstrap.sh?ref_type=heads
 */
