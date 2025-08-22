@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,32 +17,30 @@ import (
 )
 
 // Test that OpenIDProvider implements the AuthProvider interface
-func TestOpenIDProviderInterface(t *testing.T) {
-	authConfig := config.AuthSettings{
-		ClientId:     "test-client-id",
-		ClientSecret: "test-client-secret",
-		TokenUrl:     "https://example.com/token",
-		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
-	}
-
-	var provider auth.AuthProvider = auth.NewOpenIDProvider(authConfig)
-	assert.NotNil(t, provider)
-}
-
 func TestNewOpenIDProvider(t *testing.T) {
 	authConfig := config.AuthSettings{
 		ClientId:     "test-client-id",
 		ClientSecret: "test-client-secret",
 		TokenUrl:     "https://example.com/token",
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
-	provider := auth.NewOpenIDProvider(authConfig)
-
+	var provider auth.AuthProvider = auth.NewOpenIDProvider(authConfig)
 	assert.NotNil(t, provider)
-	assert.False(t, provider.IsTokenValid()) // No token initially
+}
+
+func TestOpenIDProviderInterface(t *testing.T) {
+	authConfig := config.AuthSettings{
+		ClientId:     "test-client-id",
+		ClientSecret: "test-client-secret",
+		TokenUrl:     "https://example.com/token",
+		GrantType:    "client_credentials",
+		Scopes:       []string{"openid", "profile"},
+	}
+
+	var provider auth.AuthProvider = auth.NewOpenIDProvider(authConfig)
+	assert.NotNil(t, provider)
 }
 
 func TestOpenIDProvider_GetAccessToken_Success(t *testing.T) {
@@ -79,7 +78,7 @@ func TestOpenIDProvider_GetAccessToken_Success(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -92,7 +91,7 @@ func TestOpenIDProvider_GetAccessToken_Success(t *testing.T) {
 	assert.Equal(t, "mock-access-token-12345", token.AccessToken)
 	assert.Equal(t, "Bearer", token.TokenType)
 	assert.Equal(t, 3600, token.ExpiresIn)
-	assert.Equal(t, "openid profile", token.Scope)
+	assert.Equal(t, "openid profile", strings.Join(token.Scopes, " "))
 	assert.True(t, time.Now().Before(token.ExpiresAt))
 	assert.False(t, token.IsExpired())
 }
@@ -128,7 +127,7 @@ func TestOpenIDProvider_GetAccessToken_WithRefreshToken(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -162,7 +161,7 @@ func TestOpenIDProvider_GetAccessToken_CachedToken(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -192,7 +191,7 @@ func TestOpenIDProvider_GetAccessToken_HttpError(t *testing.T) {
 		ClientSecret: "invalid-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -218,7 +217,7 @@ func TestOpenIDProvider_GetAccessToken_InvalidJSON(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -236,7 +235,7 @@ func TestOpenIDProvider_GetAccessToken_NetworkError(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     "http://invalid-url-that-should-not-exist.local",
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -275,7 +274,7 @@ func TestOpenIDProvider_GetAccessToken_WithoutClientSecret(t *testing.T) {
 		ClientSecret: "", // Empty client secret
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -293,7 +292,7 @@ func TestOpenIDProvider_IsTokenValid(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     "https://example.com/token",
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -321,7 +320,7 @@ func TestOpenIDProvider_IsTokenValid(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	})
 
 	// Get a valid token
@@ -385,7 +384,7 @@ func TestOpenIDProvider_RefreshToken_WithRefreshToken(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -430,7 +429,7 @@ func TestOpenIDProvider_RefreshToken_WithoutRefreshToken(t *testing.T) {
 		ClientSecret: "test-client-secret",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -476,7 +475,7 @@ func TestOpenIDProvider_RefreshToken_ConfigGrantType(t *testing.T) {
 		TokenUrl:     server.URL,
 		GrantType:    "refresh_token",
 		RefreshToken: "config-refresh-token",
-		Scopes:       "openid profile",
+		Scopes:       []string{"openid", "profile"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)
@@ -536,7 +535,7 @@ func TestOpenIDProvider_GrantTypes(t *testing.T) {
 				TokenUrl:     server.URL,
 				GrantType:    tc.grantType,
 				RefreshToken: "test-refresh-token", // For refresh_token grant type
-				Scopes:       "openid profile",
+				Scopes:       []string{"openid", "profile"},
 			}
 
 			provider := auth.NewOpenIDProvider(authConfig)
@@ -576,7 +575,7 @@ func TestOpenIDProvider_UrlEncoding(t *testing.T) {
 		ClientSecret: "secret&with=special?chars",
 		TokenUrl:     server.URL,
 		GrantType:    "client_credentials",
-		Scopes:       "openid profile email",
+		Scopes:       []string{"openid", "profile", "email"},
 	}
 
 	provider := auth.NewOpenIDProvider(authConfig)

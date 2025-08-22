@@ -19,15 +19,15 @@ type OsduClient struct {
 }
 
 type AuthSettings struct {
-	ClientId        string `yaml:"clientId"`
-	ClientSecret    string `yaml:"clientSecret"`
-	TenantId        string `yaml:"tenantId"` // Added for Azure authentication
-	Scopes          string `yaml:"scopes"`
-	TokenUrl        string `yaml:"tokenUrl"`
-	RefreshToken    string `yaml:"refreshToken"`
-	GrantType       string `yaml:"grantType"`
-	InternalService bool   `yaml:"internal"`
-	PodAuthEnabled  bool   `yaml:"podAuthEnabled"` // Added for Azure Pod Identity
+	ClientId        string   `yaml:"clientId"`
+	ClientSecret    string   `yaml:"clientSecret"`
+	TenantId        string   `yaml:"tenantId"` // Added for Azure authentication
+	Scopes          []string `yaml:"scopes"`
+	TokenUrl        string   `yaml:"tokenUrl"`
+	RefreshToken    string   `yaml:"refreshToken"`
+	GrantType       string   `yaml:"grantType"`
+	InternalService bool     `yaml:"internal"`
+	SdkAuth         bool     `yaml:"sdkAuth"` // Added for Azure SDK Authentication (Managed Identity, etc.)
 }
 
 type OsduSettings struct {

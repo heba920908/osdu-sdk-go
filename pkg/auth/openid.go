@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/heba920908/osdu-sdk-go/pkg/config"
@@ -47,7 +48,7 @@ func (p *OpenIDProvider) GetAccessToken(ctx context.Context) (*Token, error) {
 		formVals.Set("refresh_token", refreshToken)
 	}
 
-	formVals.Set("scope", p.config.Scopes)
+	formVals.Set("scope", strings.Join(p.config.Scopes, " "))
 	if len(p.config.ClientSecret) > 0 {
 		formVals.Set("client_secret", p.config.ClientSecret)
 	}
@@ -55,7 +56,7 @@ func (p *OpenIDProvider) GetAccessToken(ctx context.Context) (*Token, error) {
 	slog.InfoContext(ctx, fmt.Sprintf("Trying: %s", p.config.TokenUrl))
 	slog.InfoContext(ctx, fmt.Sprintf("grant_type: %s", p.config.GrantType))
 	slog.InfoContext(ctx, fmt.Sprintf("client_id: %s", p.config.ClientId))
-	slog.InfoContext(ctx, fmt.Sprintf("scope: %s", p.config.Scopes))
+	slog.InfoContext(ctx, fmt.Sprintf("scope: %s", strings.Join(p.config.Scopes, " ")))
 
 	response, err := http.PostForm(p.config.TokenUrl, formVals)
 	if err != nil {

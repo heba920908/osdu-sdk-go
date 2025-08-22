@@ -8,14 +8,15 @@ osdu:
     clientSecret: "your-client-secret"
     ## export OSDU_AUTH_TENANT_ID
     tenantId: "your-tenant-id"
-    scopes: "https://graph.microsoft.com/.default"  # or your custom scope
+    scopes: 
+    - "https://graph.microsoft.com/.default"  # or your custom scope
     grantType: client_credentials
     internal: false
     
     ## Azure Pod Identity / Managed Identity Settings
-    podAuthEnabled: false  # Set to true to use Azure Managed Identity
+    sdkAuth: false  # Set to true to use Azure Managed Identity
     
-    ## OAuth2 Fallback Settings (when not using Pod Auth)
+    ## OAuth2 Fallback Settings (when not using SDK Auth)
     tokenUrl: "https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/token"
     
   client:
@@ -26,13 +27,14 @@ osdu:
     partitionOverrides: ""
 
 ---
-# Example for Pod Identity / Managed Identity (Azure AKS)
+# Example for SDK Auth / Managed Identity (Azure AKS)
 osdu:
   provider: azure
   auth:
-    podAuthEnabled: true   # Enable Azure Managed Identity
+    sdkAuth: true   # Enable Azure Managed Identity
     tenantId: "your-tenant-id"
-    scopes: "https://management.azure.com/.default"
+    scopes: 
+    - "https://management.azure.com/.default"
     internal: false
     
   client:

@@ -27,21 +27,18 @@ type AzureProvider struct {
 
 // NewAzureProvider creates a new Azure authentication provider
 func NewAzureProvider(authConfig config.AuthSettings) (*AzureProvider, error) {
-	// Parse scopes from the configuration
-	scopes := []string{authConfig.Scopes}
-	if authConfig.Scopes == "" {
+	// Use scopes directly from the configuration
+	scopes := authConfig.Scopes
+	if len(scopes) == 0 {
 		// Default to Microsoft Graph scope if none specified
 		scopes = []string{"https://graph.microsoft.com/.default"}
-	} else if strings.Contains(authConfig.Scopes, " ") {
-		// Split multiple scopes
-		scopes = strings.Fields(authConfig.Scopes)
 	}
 
 	var credential azcore.TokenCredential
 	var err error
 
-	// Create Azure credential if Pod Auth is enabled or we have client credentials
-	if authConfig.PodAuthEnabled {
+	// Create Azure credential if SDK Auth is enabled or we have client credentials
+	if authConfig.SdkAuth {
 		// Use default Azure credential (managed identity, Azure CLI, etc.)
 		credential, err = azidentity.NewDefaultAzureCredential(nil)
 		if err != nil {
@@ -78,8 +75,8 @@ func (p *AzureProvider) GetAccessToken(ctx context.Context) (*Token, error) {
 
 	slog.InfoContext(ctx, "Azure - Generating new token")
 
-	// Check if Pod Auth is enabled (Azure Managed Identity)
-	if p.config.PodAuthEnabled {
+	// Check if SDK Auth is enabled (Azure Managed Identity)
+	if p.config.SdkAuth {
 		return p.getTokenWithAzureSDK(ctx)
 	}
 
@@ -117,7 +114,7 @@ func (p *AzureProvider) getTokenWithAzureSDK(ctx context.Context) (*Token, error
 		TokenType:   "Bearer",
 		ExpiresAt:   accessToken.ExpiresOn,
 		ExpiresIn:   int(time.Until(accessToken.ExpiresOn).Seconds()),
-		Scope:       strings.Join(p.scopes, " "),
+		Scopes:      p.scopes,
 	}
 
 	// Store the token
@@ -201,7 +198,7 @@ func (p *AzureProvider) IsTokenValid() bool {
 // RefreshToken attempts to refresh the current token
 func (p *AzureProvider) RefreshToken(ctx context.Context) (*Token, error) {
 	// For Azure SDK, just request a new token (SDK handles refresh automatically)
-	if p.config.PodAuthEnabled || p.credential != nil {
+	if p.config.SdkAuth || p.credential != nil {
 		return p.getTokenWithAzureSDK(ctx)
 	}
 

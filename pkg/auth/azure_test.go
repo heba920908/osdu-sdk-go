@@ -21,7 +21,7 @@ func TestNewAzureProvider(t *testing.T) {
 				ClientId:     "test-client-id",
 				ClientSecret: "test-client-secret",
 				TenantId:     "test-tenant-id",
-				Scopes:       "https://graph.microsoft.com/.default",
+				Scopes:       []string{"https://graph.microsoft.com/.default"},
 			},
 			wantErr:  false,
 			testName: "Should create provider with service principal",
@@ -29,17 +29,17 @@ func TestNewAzureProvider(t *testing.T) {
 		{
 			name: "pod auth enabled",
 			config: config.AuthSettings{
-				PodAuthEnabled: true,
-				TenantId:       "test-tenant-id",
-				Scopes:         "https://management.azure.com/.default",
+				SdkAuth:  true,
+				TenantId: "test-tenant-id",
+				Scopes:   []string{"https://management.azure.com/.default"},
 			},
 			wantErr:  false,
-			testName: "Should create provider with pod auth",
+			testName: "Should create provider with sdk auth",
 		},
 		{
 			name: "minimal config",
 			config: config.AuthSettings{
-				Scopes: "https://graph.microsoft.com/.default",
+				Scopes: []string{"https://graph.microsoft.com/.default"},
 			},
 			wantErr:  false,
 			testName: "Should create provider with minimal config",
@@ -81,7 +81,7 @@ func TestNewAzureProvider(t *testing.T) {
 func TestAzureProviderInterface(t *testing.T) {
 	// Test that AzureProvider implements AuthProvider interface
 	config := config.AuthSettings{
-		Scopes: "https://graph.microsoft.com/.default",
+		Scopes: []string{"https://graph.microsoft.com/.default"},
 	}
 
 	provider, err := auth.NewAzureProvider(config)
@@ -112,22 +112,22 @@ func TestAzureProviderInterface(t *testing.T) {
 func TestAzureProviderScopes(t *testing.T) {
 	tests := []struct {
 		name           string
-		inputScopes    string
+		inputScopes    []string
 		expectedScopes []string
 	}{
 		{
 			name:           "single scope",
-			inputScopes:    "https://graph.microsoft.com/.default",
+			inputScopes:    []string{"https://graph.microsoft.com/.default"},
 			expectedScopes: []string{"https://graph.microsoft.com/.default"},
 		},
 		{
 			name:           "multiple scopes",
-			inputScopes:    "https://graph.microsoft.com/.default https://management.azure.com/.default",
+			inputScopes:    []string{"https://graph.microsoft.com/.default", "https://management.azure.com/.default"},
 			expectedScopes: []string{"https://graph.microsoft.com/.default", "https://management.azure.com/.default"},
 		},
 		{
 			name:           "empty scopes",
-			inputScopes:    "",
+			inputScopes:    []string{},
 			expectedScopes: []string{"https://graph.microsoft.com/.default"}, // default
 		},
 	}

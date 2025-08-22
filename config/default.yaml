@@ -5,7 +5,8 @@ osdu:
     clientId: datafier
     ## export OSDU_AUTH_CLIENT_SECRET
     clientSecret: ""
-    scopes: openid
+    scopes: 
+    - openid
     tokenUrl: https://keycloak/realms/osdu/protocol/openid-connect/token
     grantType: client_credentials
     internal: false
