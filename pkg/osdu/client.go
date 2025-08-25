@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -92,12 +93,16 @@ func (a OsduApiRequest) NewRequest(operation string, url string, partitionid str
 }
 
 func (a OsduApiRequest) _build_headers_with_partition() (http.Header, error) {
+	slog.Debug(fmt.Sprintf("Partition Header - data-partition-id : %s", a.osduSettings.PartitionId))
+	if len(a.osduSettings.PartitionId) < 2 {
+		return http.Header{}, errors.New("invalid partition id")
+	}
 	token, err := a.authProvider.GetAccessToken(a.Context())
 	if err != nil {
 		return http.Header{}, err
 	}
 
-	slog.Debug(fmt.Sprintf("Authorization Header : Bearer %s", token.AccessToken))
+	slog.Debug(fmt.Sprintf("Authorization Header - Authorization: Bearer %s", token.AccessToken))
 	return http.Header{
 		"Content-Type":      {"application/json"},
 		"Authorization":     {fmt.Sprintf("Bearer %s", token.AccessToken)},
