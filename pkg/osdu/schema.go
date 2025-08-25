@@ -17,12 +17,16 @@ func (a OsduApiRequest) PutSystemSchema(schemaPayload []byte) error {
 	schema_url := fmt.Sprintf("%s/%s", a.osduSettings.SchemaUrl, api_schema_system_put)
 
 	var schema struct {
-		ID string `json:"id"`
+		SchemaInfo struct {
+			SchemaIdentity struct {
+				ID string `json:"id"`
+			} `json:"schemaIdentity"`
+		} `json:"schemaInfo"`
 	}
 
 	if err := json.Unmarshal(schemaPayload, &schema); err != nil {
 		slog.Warn(fmt.Sprintf("Failed to parse schema ID: %v", err))
-		schema.ID = "unknown"
+		schema.SchemaInfo.SchemaIdentity.ID = "unknown"
 	}
 
 	err := retry.Do(
@@ -36,20 +40,20 @@ func (a OsduApiRequest) PutSystemSchema(schemaPayload []byte) error {
 				if bodyBytes, err := io.ReadAll(res.Body); err == nil {
 					slog.Warn(string(bodyBytes))
 				}
-				return fmt.Errorf("[%s] schema unexpected status code: %d", schema.ID, res.StatusCode)
+				return fmt.Errorf("[%s] schema unexpected status code: %d", schema.SchemaInfo.SchemaIdentity.ID, res.StatusCode)
 			}
 
 			if res.StatusCode == http.StatusBadRequest {
-				slog.Warn(fmt.Sprintf("Schema %s most likely exists already", schema.ID))
+				slog.Warn(fmt.Sprintf("Schema %s most likely exists already", schema.SchemaInfo.SchemaIdentity.ID))
 			}
 
-			slog.Info(fmt.Sprintf("DONE SchemaUpload %s StatusCode : %d", schema.ID, res.StatusCode))
+			slog.Info(fmt.Sprintf("DONE SchemaUpload %s StatusCode : %d", schema.SchemaInfo.SchemaIdentity.ID, res.StatusCode))
 			return nil
 		},
 		retry.Attempts(3),
 		retry.Delay(5*time.Second),
 		retry.OnRetry(func(n uint, err error) {
-			slog.Warn(fmt.Sprintf("[%s] Schema Upload retry #%d: %s\n", schema.ID, n, err))
+			slog.Warn(fmt.Sprintf("[%s] Schema Upload retry #%d: %s\n", schema.SchemaInfo.SchemaIdentity.ID, n, err))
 		}),
 	)
 

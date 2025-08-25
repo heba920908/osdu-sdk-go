@@ -33,7 +33,11 @@ func TestPutSystemSchema_Success(t *testing.T) {
 
 	// Create test schema payload
 	schemaPayload := []byte(`{
-		"id": "test-schema-123",
+		"schemaInfo": {
+			"schemaIdentity": {
+				"id": "test-schema-123"
+			}
+		},
 		"kind": "test",
 		"schema": {
 			"type": "object",
@@ -65,7 +69,11 @@ func TestPutSystemSchema_HttpError(t *testing.T) {
 
 	// Create test schema payload
 	schemaPayload := []byte(`{
-		"id": "test-schema-456",
+		"schemaInfo": {
+			"schemaIdentity": {
+				"id": "test-schema-456"
+			}
+		},
 		"kind": "test",
 		"schema": {
 			"type": "object"
@@ -95,7 +103,11 @@ func TestPutSystemSchema_BadRequest_SchemaExists(t *testing.T) {
 
 	// Create test schema payload
 	schemaPayload := []byte(`{
-		"id": "existing-schema-789",
+		"schemaInfo": {
+			"schemaIdentity": {
+				"id": "existing-schema-789"
+			}
+		},
 		"kind": "test",
 		"schema": {
 			"type": "object"
@@ -153,7 +165,11 @@ func TestPutSystemSchema_AuthenticationFailure(t *testing.T) {
 
 	// Create test schema payload
 	schemaPayload := []byte(`{
-		"id": "test-schema-auth-fail",
+		"schemaInfo": {
+			"schemaIdentity": {
+				"id": "test-schema-auth-fail"
+			}
+		},
 		"kind": "test"
 	}`)
 
@@ -208,7 +224,11 @@ func TestPutSystemSchema_WithRetry(t *testing.T) {
 
 	// Create test schema payload
 	schemaPayload := []byte(`{
-		"id": "retry-schema-123",
+		"schemaInfo": {
+			"schemaIdentity": {
+				"id": "retry-schema-123"
+			}
+		},
 		"kind": "test"
 	}`)
 
