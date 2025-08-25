@@ -84,7 +84,7 @@ func TestMockPartitionRegistration(t *testing.T) {
 			}
 
 			// Execute test
-			err := client.RegisterPartition(partition, tt.isSystem)
+			err := client.RegisterPartition(partition)
 
 			// Verify results
 			if tt.expectError {
@@ -172,6 +172,6 @@ func TestMockPartitionWithOverride(t *testing.T) {
 	json.Unmarshal(finalJSON, &finalPartition)
 
 	// Execute test
-	err = client.RegisterPartition(finalPartition, false)
+	err = client.RegisterPartition(finalPartition)
 	assert.NoError(t, err)
 }

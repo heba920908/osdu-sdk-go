@@ -95,7 +95,7 @@ func TestMockAuthenticationFailure(t *testing.T) {
 
 	// Execute test - should fail due to network error because auth fails but code continues
 	// Note: This exposes a bug in the original code where auth errors are ignored
-	err := client.RegisterPartition(partition, false)
+	err := client.RegisterPartition(partition)
 	assert.Error(t, err)
 	// The current implementation logs the auth error but continues, so we get a network error
 	assert.Contains(t, err.Error(), "mock-partition")

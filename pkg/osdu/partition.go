@@ -13,7 +13,7 @@ import (
 	"github.com/heba920908/osdu-sdk-go/pkg/models"
 )
 
-func (a OsduApiRequest) RegisterPartition(partition models.Partition, is_system bool) error {
+func (a OsduApiRequest) RegisterPartition(partition models.Partition) error {
 	partition_id := partition.Properties.DataPartitionId.Value
 
 	if len(partition_id) < 2 {
@@ -24,12 +24,6 @@ func (a OsduApiRequest) RegisterPartition(partition models.Partition, is_system 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	post_partition_url := fmt.Sprintf("%s/partitions/%s", a.osduSettings.PartitionUrl, partition_id)
-
-	if is_system {
-		post_partition_url = fmt.Sprintf("%s/partitions/system", a.osduSettings.PartitionUrl)
-		// Looks that this endpoint got deprecated
-		// post_partition_url = fmt.Sprintf("%s/partition/system", a.OsduSettings.PartitionUrl)
-	}
 
 	json_content, err := json.Marshal(partition)
 	if err != nil {
