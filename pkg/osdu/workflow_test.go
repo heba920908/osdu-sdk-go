@@ -18,7 +18,7 @@ func TestRegisterWorkflow_Success(t *testing.T) {
 	// Create a mock server that simulates successful workflow registration
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the request
-		assert.Equal(t, "PUT", r.Method)
+		assert.Equal(t, "POST", r.Method)
 		assert.Equal(t, "/workflow", r.URL.Path)
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 		assert.Contains(t, r.Header.Get("Authorization"), "Bearer mock-access-token")

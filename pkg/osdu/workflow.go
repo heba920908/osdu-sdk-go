@@ -32,7 +32,7 @@ func (a OsduApiRequest) RegisterWorkflow(wr models.RegisterWorkflow) error {
 		func() error {
 			http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-			req, err := http.NewRequest("PUT", create_workflow_url, bytes.NewBuffer(json_content))
+			req, err := http.NewRequest("POST", create_workflow_url, bytes.NewBuffer(json_content))
 			if err != nil {
 				return err
 			}
