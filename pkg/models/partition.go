@@ -79,7 +79,7 @@ type PartitionProperties struct {
 	/*
 	  Known properties for azure
 	*/
-	ComplianceRuleset                         PartitionProperty `json:"compliance-ruleset,omitempty"`
+	AzureComplianceRuleset                    PartitionProperty `json:"compliance-ruleset,omitempty"`
 	ElasticSevenEndpoint                      PartitionProperty `json:"elastic-endpoint,omitempty"`
 	ElasticSevenUsername                      PartitionProperty `json:"elastic-username,omitempty"`
 	ElasticSevenPassword                      PartitionProperty `json:"elastic-password,omitempty"`
