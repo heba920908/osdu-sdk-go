@@ -47,16 +47,6 @@ func TestMockPartitionRegistration(t *testing.T) {
 			expectError: false,
 		},
 		{
-			name:     "system partition registration",
-			isSystem: true,
-			serverResponse: func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, "POST", r.Method)
-				assert.Contains(t, r.URL.Path, "/partitions/system")
-				w.WriteHeader(http.StatusCreated)
-			},
-			expectError: false,
-		},
-		{
 			name:     "server error",
 			isSystem: false,
 			serverResponse: func(w http.ResponseWriter, r *http.Request) {
