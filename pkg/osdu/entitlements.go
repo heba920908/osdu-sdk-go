@@ -36,7 +36,11 @@ func (a OsduApiRequest) EntitlementsBootstrap() error {
 	err = retry.Do(
 		func() error {
 			req, _ := http.NewRequest("POST", bootstrap_url, bytes.NewBuffer([]byte(json_content)))
-			headers, _ := a._build_headers_with_partition()
+			headers, err := a._build_headers_with_partition()
+			if err != nil {
+				return err
+			}
+
 			req.Header = headers
 
 			http_client := http.Client{}

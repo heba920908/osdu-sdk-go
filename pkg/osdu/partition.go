@@ -15,6 +15,11 @@ import (
 
 func (a OsduApiRequest) RegisterPartition(partition models.Partition, is_system bool) error {
 	partition_id := partition.Properties.DataPartitionId.Value
+
+	if len(partition_id) < 2 {
+		return fmt.Errorf("partition_id cannot be empty properties.dataPartitionId shouldn't be empty")
+	}
+
 	ctx := context.WithValue(a.Context(), OsduApi, "register_partition")
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
