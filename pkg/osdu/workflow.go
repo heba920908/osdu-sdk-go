@@ -15,9 +15,27 @@ import (
 	"github.com/heba920908/osdu-sdk-go/pkg/models"
 )
 
-func (a OsduApiRequest) RegisterWorkflow(wr models.RegisterWorkflow) error {
-	ctx := context.WithValue(a.Context(), OsduApi, "register_workflow")
-	create_workflow_url := fmt.Sprintf("%s/workflow", a.osduSettings.WorkflowUrl)
+// WorkflowClient implements WorkflowService interface
+type WorkflowClient struct {
+	apiClient *OsduApiRequest
+}
+
+// NewWorkflowService creates a new WorkflowService implementation
+func NewWorkflowService(apiClient *OsduApiRequest) WorkflowService {
+	return &WorkflowClient{
+		apiClient: apiClient,
+	}
+}
+
+// WorkflowService defines the interface for workflow operations
+type WorkflowService interface {
+	RegisterWorkflow(workflow models.RegisterWorkflow) error
+}
+
+// RegisterWorkflow implements the WorkflowService interface
+func (w *WorkflowClient) RegisterWorkflow(wr models.RegisterWorkflow) error {
+	ctx := context.WithValue(w.apiClient.Context(), OsduApi, "register_workflow")
+	create_workflow_url := fmt.Sprintf("%s/workflow", w.apiClient.osduSettings.WorkflowUrl)
 
 	json_content, err := json.Marshal(wr)
 	if err != nil {
@@ -37,7 +55,7 @@ func (a OsduApiRequest) RegisterWorkflow(wr models.RegisterWorkflow) error {
 				return err
 			}
 
-			headers, err := a._build_headers_with_partition()
+			headers, err := w.apiClient._build_headers_with_partition()
 			if err != nil {
 				return err
 			}

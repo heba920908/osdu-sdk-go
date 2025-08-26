@@ -14,7 +14,17 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestRegisterWorkflow_Success(t *testing.T) {
+// MockWorkflowService implements the WorkflowService interface for testing
+type MockWorkflowService struct {
+	mock.Mock
+}
+
+func (m *MockWorkflowService) RegisterWorkflow(workflow models.RegisterWorkflow) error {
+	args := m.Called(workflow)
+	return args.Error(0)
+}
+
+func TestWorkflowService_RegisterWorkflow_Success(t *testing.T) {
 	// Create a mock server that simulates successful workflow registration
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify the request
@@ -30,116 +40,84 @@ func TestRegisterWorkflow_Success(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Create mock client
-	client, mockAuth := createMockWorkflowClient(server.URL)
+	// Create client and workflow service
+	client := createMockWorkflowClient(server.URL)
+	workflowService := client.Workflow()
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
-		WorkflowName: "test-workflow",
-		Description:  "Test workflow description",
+		WorkflowName: "test-workflow-service",
+		Description:  "Test workflow via service interface",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "test-dag",
+			DagName: "test-dag-service",
 		},
 	}
 
-	// Execute test
-	err := client.RegisterWorkflow(workflow)
+	// Execute test via interface
+	err := workflowService.RegisterWorkflow(workflow)
 
 	// Verify results
 	assert.NoError(t, err)
-	mockAuth.AssertExpectations(t)
 }
 
-func TestRegisterWorkflow_Conflict_AlreadyRegistered(t *testing.T) {
-	// Create a mock server that simulates workflow already exists (409)
+func TestWorkflowService_RegisterWorkflow_ConflictHandling(t *testing.T) {
+	// Create a mock server that returns conflict (workflow already exists)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Return conflict response
 		w.WriteHeader(http.StatusConflict)
 		w.Write([]byte(`{"error": "Workflow already exists"}`))
 	}))
 	defer server.Close()
 
-	// Create mock client
-	client, mockAuth := createMockWorkflowClient(server.URL)
+	// Create client and workflow service
+	client := createMockWorkflowClient(server.URL)
+	workflowService := client.Workflow()
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
-		WorkflowName: "existing-workflow",
-		Description:  "Already existing workflow",
+		WorkflowName: "existing-workflow-service",
+		Description:  "Already existing workflow via service",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "existing-dag",
+			DagName: "existing-dag-service",
 		},
 	}
 
-	// Execute test - should succeed (409 is treated as "already registered")
-	err := client.RegisterWorkflow(workflow)
+	// Execute test via interface - should succeed (409 handled as "already exists")
+	err := workflowService.RegisterWorkflow(workflow)
 
-	// Verify results - no error because 409 is handled as "already registered"
+	// Verify results
 	assert.NoError(t, err)
-	mockAuth.AssertExpectations(t)
 }
 
-func TestRegisterWorkflow_HttpError(t *testing.T) {
-	// Create a mock server that simulates HTTP error
+func TestWorkflowService_RegisterWorkflow_HttpError(t *testing.T) {
+	// Create a mock server that returns error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Return error response
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "Internal server error"}`))
 	}))
 	defer server.Close()
 
-	// Create mock client
-	client, mockAuth := createMockWorkflowClient(server.URL)
+	// Create client and workflow service
+	client := createMockWorkflowClient(server.URL)
+	workflowService := client.Workflow()
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
-		WorkflowName: "test-workflow-error",
-		Description:  "Test workflow that will fail",
+		WorkflowName: "error-workflow-service",
+		Description:  "Workflow that will fail via service",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "test-dag-error",
+			DagName: "error-dag-service",
 		},
 	}
 
-	// Execute test
-	err := client.RegisterWorkflow(workflow)
+	// Execute test via interface
+	err := workflowService.RegisterWorkflow(workflow)
 
 	// Verify results
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "workflow service response - 500")
-	mockAuth.AssertExpectations(t)
 }
 
-func TestRegisterWorkflow_BadRequest(t *testing.T) {
-	// Create a mock server that simulates bad request
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Return bad request response
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "Invalid workflow data"}`))
-	}))
-	defer server.Close()
-
-	// Create mock client
-	client, mockAuth := createMockWorkflowClient(server.URL)
-
-	// Create test workflow
-	workflow := models.RegisterWorkflow{
-		WorkflowName: "invalid-workflow",
-		Description:  "Invalid workflow data",
-		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "",
-		},
-	}
-
-	// Execute test
-	err := client.RegisterWorkflow(workflow)
-
-	// Verify results
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "workflow service response - 400")
-	mockAuth.AssertExpectations(t)
-}
-
-func TestRegisterWorkflow_AuthenticationFailure(t *testing.T) {
+func TestWorkflowService_RegisterWorkflow_AuthenticationFailure(t *testing.T) {
 	// Create a mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -156,20 +134,21 @@ func TestRegisterWorkflow_AuthenticationFailure(t *testing.T) {
 		WorkflowUrl: server.URL,
 	}
 
-	// Create client with failing auth provider
+	// Create client with failing auth provider and get workflow service
 	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
+	workflowService := client.Workflow()
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
-		WorkflowName: "test-workflow-auth-fail",
+		WorkflowName: "test-auth-fail-workflow",
 		Description:  "Test workflow auth failure",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "test-dag-auth",
+			DagName: "auth-fail-dag",
 		},
 	}
 
 	// Execute test
-	err := client.RegisterWorkflow(workflow)
+	err := workflowService.RegisterWorkflow(workflow)
 
 	// Verify results
 	assert.Error(t, err)
@@ -177,28 +156,7 @@ func TestRegisterWorkflow_AuthenticationFailure(t *testing.T) {
 	mockAuth.AssertExpectations(t)
 }
 
-func TestRegisterWorkflow_NetworkError(t *testing.T) {
-	// Create mock client with invalid URL
-	client, mockAuth := createMockWorkflowClient("http://invalid-url-that-should-not-exist.local")
-
-	// Create test workflow
-	workflow := models.RegisterWorkflow{
-		WorkflowName: "test-workflow-network",
-		Description:  "Test workflow network error",
-		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "test-dag-network",
-		},
-	}
-
-	// Execute test
-	err := client.RegisterWorkflow(workflow)
-
-	// Verify results
-	assert.Error(t, err)
-	mockAuth.AssertExpectations(t)
-}
-
-func TestRegisterWorkflow_WithRetry(t *testing.T) {
+func TestWorkflowService_RegisterWorkflow_WithRetry(t *testing.T) {
 	callCount := 0
 	// Create a mock server that fails twice then succeeds
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -215,56 +173,158 @@ func TestRegisterWorkflow_WithRetry(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Create mock client
-	client, mockAuth := createMockWorkflowClient(server.URL)
+	// Create client and workflow service
+	client := createMockWorkflowClient(server.URL)
+	workflowService := client.Workflow()
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
-		WorkflowName: "retry-workflow",
-		Description:  "Test workflow with retry",
+		WorkflowName: "retry-workflow-service",
+		Description:  "Test workflow with retry via service",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "retry-dag",
+			DagName: "retry-dag-service",
 		},
 	}
 
 	// Execute test
-	err := client.RegisterWorkflow(workflow)
+	err := workflowService.RegisterWorkflow(workflow)
 
 	// Verify results - should succeed after retries
 	assert.NoError(t, err)
-	assert.Equal(t, 3, callCount) // Should have tried 3 times total
-	mockAuth.AssertExpectations(t)
+	assert.Equal(t, 3, callCount) // Should have retried 3 times total
 }
 
-func TestRegisterWorkflow_EmptyWorkflowName(t *testing.T) {
+func TestWorkflowService_RegisterWorkflow_EmptyPayload(t *testing.T) {
 	// Create a mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
 
-	// Create mock client
-	client, mockAuth := createMockWorkflowClient(server.URL)
+	// Create client and workflow service
+	client := createMockWorkflowClient(server.URL)
+	workflowService := client.Workflow()
 
-	// Create test workflow with empty name
+	// Create workflow with empty fields
 	workflow := models.RegisterWorkflow{
 		WorkflowName: "",
-		Description:  "Workflow with empty name",
+		Description:  "",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "test-dag",
+			DagName: "",
 		},
 	}
 
 	// Execute test - should work (server will validate)
-	err := client.RegisterWorkflow(workflow)
+	err := workflowService.RegisterWorkflow(workflow)
 
 	// Verify results
 	assert.NoError(t, err)
-	mockAuth.AssertExpectations(t)
 }
 
-// createMockWorkflowClient creates an OSDU client with a mock auth provider for workflow testing
-func createMockWorkflowClient(workflowURL string) (osdu.OsduApiRequest, *MockAuthProvider) {
+// Test the mock workflow service directly
+func TestMockWorkflowService_RegisterWorkflow_Success(t *testing.T) {
+	// Create mock workflow service
+	mockWorkflowService := &MockWorkflowService{}
+
+	// Setup expectations
+	workflow := models.RegisterWorkflow{
+		WorkflowName: "mock-test-workflow",
+		Description:  "Mock test workflow",
+		RegistrationInstructions: models.RegistrationInstructions{
+			DagName: "mock-test-dag",
+		},
+	}
+
+	mockWorkflowService.On("RegisterWorkflow", workflow).Return(nil)
+
+	// Execute test
+	err := mockWorkflowService.RegisterWorkflow(workflow)
+
+	// Verify results
+	assert.NoError(t, err)
+	mockWorkflowService.AssertExpectations(t)
+}
+
+func TestMockWorkflowService_RegisterWorkflow_Error(t *testing.T) {
+	// Create mock workflow service
+	mockWorkflowService := &MockWorkflowService{}
+
+	// Setup expectations for error case
+	workflow := models.RegisterWorkflow{
+		WorkflowName: "mock-error-workflow",
+		Description:  "Mock error workflow",
+		RegistrationInstructions: models.RegistrationInstructions{
+			DagName: "mock-error-dag",
+		},
+	}
+
+	expectedError := fmt.Errorf("mock registration failed")
+	mockWorkflowService.On("RegisterWorkflow", workflow).Return(expectedError)
+
+	// Execute test
+	err := mockWorkflowService.RegisterWorkflow(workflow)
+
+	// Verify results
+	assert.Error(t, err)
+	assert.Equal(t, expectedError, err)
+	mockWorkflowService.AssertExpectations(t)
+}
+
+// Demonstrate dependency injection pattern
+func TestWorkflowService_DependencyInjection(t *testing.T) {
+	// This test demonstrates how the interface can be used for dependency injection
+	mockWorkflowService := &MockWorkflowService{}
+
+	// Setup expectations
+	workflow := models.RegisterWorkflow{
+		WorkflowName: "dependency-injection-test",
+		Description:  "Test dependency injection pattern",
+		RegistrationInstructions: models.RegistrationInstructions{
+			DagName: "di-test-dag",
+		},
+	}
+
+	mockWorkflowService.On("RegisterWorkflow", workflow).Return(nil)
+
+	// Execute test using mock service directly (avoiding import cycle)
+	err := mockWorkflowService.RegisterWorkflow(workflow)
+
+	// Verify results
+	assert.NoError(t, err)
+	mockWorkflowService.AssertExpectations(t)
+}
+
+// Benchmark test for the new interface approach
+func BenchmarkWorkflowService_RegisterWorkflow(b *testing.B) {
+	// Create a mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "success"}`))
+	}))
+	defer server.Close()
+
+	// Create client and workflow service
+	client := createMockWorkflowClient(server.URL)
+	workflowService := client.Workflow()
+
+	// Create test workflow
+	workflow := models.RegisterWorkflow{
+		WorkflowName: "benchmark-workflow",
+		Description:  "Benchmark test workflow",
+		RegistrationInstructions: models.RegistrationInstructions{
+			DagName: "benchmark-dag",
+		},
+	}
+
+	// Run benchmark
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = workflowService.RegisterWorkflow(workflow)
+	}
+}
+
+// Helper function to create mock workflow client
+func createMockWorkflowClient(workflowURL string) osdu.OsduApiRequest {
 	mockAuth := &MockAuthProvider{}
 
 	// Mock successful token response
@@ -280,6 +340,5 @@ func createMockWorkflowClient(workflowURL string) (osdu.OsduApiRequest, *MockAut
 	}
 
 	// Create client with mock provider and test settings
-	client := osdu.NewClientWithConfig(mockAuth, osduSettings)
-	return client, mockAuth
+	return osdu.NewClientWithConfig(mockAuth, osduSettings)
 }

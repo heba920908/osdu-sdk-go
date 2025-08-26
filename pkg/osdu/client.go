@@ -73,6 +73,11 @@ func (a OsduApiRequest) Context() context.Context {
 	return context.Background()
 }
 
+// Workflow returns a WorkflowService interface for workflow operations
+func (a OsduApiRequest) Workflow() WorkflowService {
+	return NewWorkflowService(&a)
+}
+
 func (a OsduApiRequest) NewRequest(operation string, url string, partitionid string, body []byte) ([]byte, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	req, _ := http.NewRequest(operation, url, bytes.NewBuffer(body))
