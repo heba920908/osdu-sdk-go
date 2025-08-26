@@ -13,18 +13,21 @@ type Config struct {
 }
 
 type OsduClient struct {
+	Provider     string `yaml:"provider"`
 	AuthSettings `yaml:"auth"`
 	OsduSettings `yaml:"client"`
 }
 
 type AuthSettings struct {
-	ClientId        string `yaml:"clientId"`
-	ClientSecret    string `yaml:"clientSecret"`
-	Scopes          string `yaml:"scopes"`
-	TokenUrl        string `yaml:"tokenUrl"`
-	RefreshToken    string `yaml:"refreshToken"`
-	GrantType       string `yaml:"grantType"`
-	InternalService bool   `yaml:"internal"`
+	ClientId        string   `yaml:"clientId"`
+	ClientSecret    string   `yaml:"clientSecret"`
+	TenantId        string   `yaml:"tenantId"` // Added for Azure authentication
+	Scopes          []string `yaml:"scopes"`
+	TokenUrl        string   `yaml:"tokenUrl"`
+	RefreshToken    string   `yaml:"refreshToken"`
+	GrantType       string   `yaml:"grantType"`
+	InternalService bool     `yaml:"internal"`
+	SdkAuth         bool     `yaml:"sdkAuth"` // Added for Azure SDK Authentication (Managed Identity, etc.)
 }
 
 type OsduSettings struct {
@@ -32,6 +35,7 @@ type OsduSettings struct {
 	PartitionUrl       string `yaml:"partitionUrl"`
 	EntitlementsUrl    string `yaml:"entitlementsUrl"`
 	WorkflowUrl        string `yaml:"workflowUrl"`
+	SchemaUrl          string `yaml:"schemaUrl"`
 	EntitlementsDomain string `yaml:"entitlementsDomain"`
 	PartitionId        string `yaml:"partitionId"`
 	PartitionOverrides string `yaml:"partitionOverrides"`

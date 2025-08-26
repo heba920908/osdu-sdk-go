@@ -6,8 +6,8 @@ type FileGetSignedUrlResponse struct {
 }
 
 type FileResponseLocation struct {
-	SignedURL  string `json:"SignedURL"`
-	FileSource string `json:"FileSource"`
+	SignedUrl  string `json:"SignedUrl"`
+	FileSource string `json:"FileSource,omitempty"`
 }
 
 type FileGetDownloadUrlResponse struct {
