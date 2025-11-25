@@ -36,6 +36,7 @@ type OsduSettings struct {
 	EntitlementsUrl    string `yaml:"entitlementsUrl"`
 	WorkflowUrl        string `yaml:"workflowUrl"`
 	SchemaUrl          string `yaml:"schemaUrl"`
+	RegisterUrl        string `yaml:"registerUrl"`
 	EntitlementsDomain string `yaml:"entitlementsDomain"`
 	PartitionId        string `yaml:"partitionId"`
 	PartitionOverrides string `yaml:"partitionOverrides"`
