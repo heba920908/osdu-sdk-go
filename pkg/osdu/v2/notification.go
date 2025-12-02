@@ -13,13 +13,14 @@ import (
 	"time"
 
 	"github.com/heba920908/osdu-sdk-go/pkg/models/notification"
+	"github.com/heba920908/osdu-sdk-go/pkg/utils"
 )
 
 // NotificationHandler provides utilities for handling incoming notification webhooks
 // and challenge-response validation from OSDU notification service
 type NotificationHandler interface {
 	// ComputeChallengeResponse computes the response hash for the challenge-response validation
-	// This implements the logic from HashingUtil.java
+	// This implements the logic from HashingUtil.java it is the same as public static String hashString(String crc, String secret)
 	ComputeChallengeResponse(crc, secret string) string
 
 	// HandleChallenge handles the GET challenge request from notification service
@@ -33,11 +34,15 @@ type NotificationHandler interface {
 }
 
 // notificationHandler implements NotificationHandler interface
-type notificationHandler struct{}
+type notificationHandler struct {
+	signatureService *utils.SignatureService
+}
 
 // NewNotificationHandler creates a new notification handler
 func NewNotificationHandler() NotificationHandler {
-	return &notificationHandler{}
+	return &notificationHandler{
+		signatureService: utils.NewSignatureService(),
+	}
 }
 
 // ComputeChallengeResponse implements the hashing logic from HashingUtil.java
@@ -62,11 +67,13 @@ func (h *notificationHandler) ComputeChallengeResponse(crc, secret string) strin
 
 // HandleChallenge handles the challenge-response validation
 // GET /?crc=xxxxxx&hmac=ssxxsxsxsxx
-// TODO: Implement HMAC signature verification
+// Verifies the HMAC signature (warns if invalid) and computes the challenge response
+// Note: HMAC verification failure is logged as warning but doesn't block the response
+// This matches the Java ChallengeResponseCheck behavior where the challenge response is always computed
 func (h *notificationHandler) HandleChallenge(crc, hmac, secret string) (notification.ChallengeResponse, error) {
-	if crc == "" || hmac == "" {
-		slog.Warn("Challenge validation failed: missing parameters")
-		return notification.ChallengeResponse{}, fmt.Errorf("crc and hmac parameters are required")
+	if crc == "" {
+		slog.Warn("Challenge validation failed: missing crc parameter")
+		return notification.ChallengeResponse{}, fmt.Errorf("crc parameter is required")
 	}
 
 	if secret == "" {
@@ -74,8 +81,17 @@ func (h *notificationHandler) HandleChallenge(crc, hmac, secret string) (notific
 		return notification.ChallengeResponse{}, fmt.Errorf("secret is required")
 	}
 
-	// TODO: Verify HMAC signature
-	// See: https://community.opengroup.org/osdu/platform/system/lib/core/os-core-common/-/blob/v0.21.0/src/main/java/org/opengroup/osdu/core/common/cryptographic/SignatureService.java
+	// Verify HMAC signature if provided (warn if invalid, but continue)
+	if hmac != "" {
+		if err := h.signatureService.VerifyHmacSignature(hmac, secret); err != nil {
+			slog.Warn("HMAC signature verification failed", "error", err)
+			// Don't return error - continue with challenge response
+		} else {
+			slog.Debug("HMAC signature verified successfully")
+		}
+	} else {
+		slog.Warn("Challenge received without HMAC signature")
+	}
 
 	// Compute the challenge response
 	responseHash := h.ComputeChallengeResponse(crc, secret)
@@ -164,17 +180,18 @@ func (nwh *NotificationWebhookHandler) WithLogger(logger *slog.Logger) *Notifica
 
 // HandleChallengeHTTP is an HTTP handler for challenge-response validation
 // GET /?crc=xxxxxx&hmac=ssxxsxsxsxx
+// The hmac parameter is optional - if missing or invalid, a warning is logged
 func (nwh *NotificationWebhookHandler) HandleChallengeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		nwh.logger.Warn("Invalid HTTP method for challenge", "method", r.Method)
-		http.Error(w, "Only GET method allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	crc := r.URL.Query().Get("crc")
 	hmac := r.URL.Query().Get("hmac")
 
-	nwh.logger.Debug("Handling challenge request", "crcLength", len(crc), "hmacLength", len(hmac))
+	nwh.logger.Info("Handling challenge request", "crcLength", len(crc), "hmacLength", len(hmac))
 
 	response, err := nwh.handler.HandleChallenge(crc, hmac, nwh.secret)
 	if err != nil {
