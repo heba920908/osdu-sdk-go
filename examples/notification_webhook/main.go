@@ -124,7 +124,25 @@ func setupWithMux() {
 }
 */
 
-// Example of using the NotificationHandler interface directly for testing:
+// Example of using standalone functions (without creating NotificationHandler):
+/*
+func testStandaloneFunctions() {
+	// Compute challenge response directly
+	crc := "12345"
+	secret := "my-secret"
+	responseHash := v2.ComputeChallengeResponse(crc, secret)
+	fmt.Printf("Response hash: %s\n", responseHash)
+
+	// Handle full challenge directly
+	response, err := v2.HandleChallenge(crc, "hmac-value", secret)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Challenge response: %+v\n", response)
+}
+*/
+
+// Example of using the NotificationHandler interface:
 /*
 func testChallengeResponse() {
 	handler := v2.NewNotificationHandler()

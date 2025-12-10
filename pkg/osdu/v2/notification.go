@@ -16,6 +16,69 @@ import (
 	"github.com/heba920908/osdu-sdk-go/pkg/utils"
 )
 
+// ComputeChallengeResponse computes the response hash for the challenge-response validation
+// This implements the logic from HashingUtil.java - public static String hashString(String crc, String secret)
+// Can be used independently without creating a NotificationHandler
+//
+// Java implementation:
+//
+//	String response = secret + crc;
+//	response = Hashing.sha256().hashString(response, StandardCharsets.UTF_8).toString();
+//	return Base64.getEncoder().encodeToString(response.getBytes());
+func ComputeChallengeResponse(crc, secret string) string {
+	// Step 1: Concatenate secret + crc
+	input := secret + crc
+
+	// Step 2: Compute SHA-256 hash and get hex string
+	hash := sha256.Sum256([]byte(input))
+	hexString := hex.EncodeToString(hash[:])
+
+	// Step 3: Base64 encode the hex string (as bytes)
+	encoded := base64.StdEncoding.EncodeToString([]byte(hexString))
+
+	return encoded
+}
+
+// HandleChallenge handles the challenge-response validation
+// GET /?crc=xxxxxx&hmac=ssxxsxsxsxx
+// Verifies the HMAC signature (warns if invalid) and computes the challenge response
+// Can be used independently without creating a NotificationHandler
+//
+// Note: HMAC verification failure is logged as warning but doesn't block the response
+// This matches the Java ChallengeResponseCheck behavior where the challenge response is always computed
+func HandleChallenge(crc, hmac, secret string) (notification.ChallengeResponse, error) {
+	if crc == "" {
+		slog.Warn("Challenge validation failed: missing crc parameter")
+		return notification.ChallengeResponse{}, fmt.Errorf("crc parameter is required")
+	}
+
+	if secret == "" {
+		slog.Warn("Challenge validation failed: missing secret")
+		return notification.ChallengeResponse{}, fmt.Errorf("secret is required")
+	}
+
+	// Verify HMAC signature if provided (warn if invalid, but continue)
+	if hmac != "" {
+		signatureService := utils.NewSignatureService()
+		if err := signatureService.VerifyHmacSignature(hmac, secret); err != nil {
+			slog.Warn("HMAC signature verification failed", "error", err)
+			// Don't return error - continue with challenge response
+		} else {
+			slog.Debug("HMAC signature verified successfully")
+		}
+	} else {
+		slog.Warn("Challenge received without HMAC signature")
+	}
+
+	// Compute the challenge response
+	responseHash := ComputeChallengeResponse(crc, secret)
+
+	slog.Debug("Challenge response computed successfully", "crcLength", len(crc))
+	return notification.ChallengeResponse{
+		ResponseHash: responseHash,
+	}, nil
+}
+
 // NotificationHandler provides utilities for handling incoming notification webhooks
 // and challenge-response validation from OSDU notification service
 type NotificationHandler interface {
@@ -45,61 +108,14 @@ func NewNotificationHandler() NotificationHandler {
 	}
 }
 
-// ComputeChallengeResponse implements the hashing logic from HashingUtil.java
-// Java implementation:
-//
-//	String response = secret + crc;
-//	response = Hashing.sha256().hashString(response, StandardCharsets.UTF_8).toString();
-//	return Base64.getEncoder().encodeToString(response.getBytes());
+// ComputeChallengeResponse delegates to the package-level function
 func (h *notificationHandler) ComputeChallengeResponse(crc, secret string) string {
-	// Step 1: Concatenate secret + crc
-	input := secret + crc
-
-	// Step 2: Compute SHA-256 hash and get hex string
-	hash := sha256.Sum256([]byte(input))
-	hexString := hex.EncodeToString(hash[:])
-
-	// Step 3: Base64 encode the hex string (as bytes)
-	encoded := base64.StdEncoding.EncodeToString([]byte(hexString))
-
-	return encoded
+	return ComputeChallengeResponse(crc, secret)
 }
 
-// HandleChallenge handles the challenge-response validation
-// GET /?crc=xxxxxx&hmac=ssxxsxsxsxx
-// Verifies the HMAC signature (warns if invalid) and computes the challenge response
-// Note: HMAC verification failure is logged as warning but doesn't block the response
-// This matches the Java ChallengeResponseCheck behavior where the challenge response is always computed
+// HandleChallenge delegates to the package-level function
 func (h *notificationHandler) HandleChallenge(crc, hmac, secret string) (notification.ChallengeResponse, error) {
-	if crc == "" {
-		slog.Warn("Challenge validation failed: missing crc parameter")
-		return notification.ChallengeResponse{}, fmt.Errorf("crc parameter is required")
-	}
-
-	if secret == "" {
-		slog.Warn("Challenge validation failed: missing secret")
-		return notification.ChallengeResponse{}, fmt.Errorf("secret is required")
-	}
-
-	// Verify HMAC signature if provided (warn if invalid, but continue)
-	if hmac != "" {
-		if err := h.signatureService.VerifyHmacSignature(hmac, secret); err != nil {
-			slog.Warn("HMAC signature verification failed", "error", err)
-			// Don't return error - continue with challenge response
-		} else {
-			slog.Debug("HMAC signature verified successfully")
-		}
-	} else {
-		slog.Warn("Challenge received without HMAC signature")
-	}
-
-	// Compute the challenge response
-	responseHash := h.ComputeChallengeResponse(crc, secret)
-
-	slog.Debug("Challenge response computed successfully", "crcLength", len(crc))
-	return notification.ChallengeResponse{
-		ResponseHash: responseHash,
-	}, nil
+	return HandleChallenge(crc, hmac, secret)
 }
 
 // ParseNotificationPayload parses incoming notification payload
@@ -201,7 +217,8 @@ func (nwh *NotificationWebhookHandler) HandleChallengeHTTP(w http.ResponseWriter
 
 	nwh.logger.Info("Handling challenge request", "crcLength", len(crc), "hmacLength", len(hmac))
 
-	response, err := nwh.handler.HandleChallenge(crc, hmac, nwh.secret)
+	// Use the standalone function directly
+	response, err := HandleChallenge(crc, hmac, nwh.secret)
 	if err != nil {
 		nwh.logger.Error("Challenge validation failed", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
