@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Define a callback to process received notifications
-	onNotificationReceived := func(msg *notification.NotificationMessage) error {
+	onNotificationReceived := func(msg *notification.NotificationMessage) (interface{}, error) {
 		logger.Info("Processing notification",
 			"notificationId", msg.ID,
 			"subject", msg.Subject,
@@ -49,7 +49,15 @@ func main() {
 		// - Update cache
 		// etc.
 
-		return nil
+		// Return nil to use the default response, or return a custom response structure
+		// Example custom response:
+		// return map[string]interface{}{
+		//     "status": "PROCESSED",
+		//     "message": "Successfully processed notification",
+		//     "recordCount": len(msg.Data.Records),
+		// }, nil
+
+		return nil, nil
 	}
 
 	// Create the webhook handler with custom logger
@@ -98,9 +106,11 @@ func main() {
 func setupWithMux() {
 	secret := os.Getenv("NOTIFICATION_SECRET")
 
-	onNotification := func(msg *notification.NotificationMessage) error {
+	onNotification := func(msg *notification.NotificationMessage) (interface{}, error) {
 		// Process notification
-		return nil
+		// Return nil, nil to use default response
+		// Or return custom response structure
+		return nil, nil
 	}
 
 	webhookHandler := v2.NewNotificationWebhookHandler(secret, onNotification)
