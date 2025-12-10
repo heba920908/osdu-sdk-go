@@ -344,9 +344,9 @@ func TestNotificationWebhookHandler_HandleChallengeHTTP(t *testing.T) {
 
 func TestNotificationWebhookHandler_HandleNotificationHTTP(t *testing.T) {
 	var receivedMsg *notification.NotificationMessage
-	onNotification := func(msg *notification.NotificationMessage) error {
+	onNotification := func(msg *notification.NotificationMessage) (interface{}, error) {
 		receivedMsg = msg
-		return nil
+		return nil, nil // Return nil to use default response
 	}
 
 	handler := v2.NewNotificationWebhookHandler("secret", onNotification)
@@ -399,6 +399,37 @@ func TestNotificationWebhookHandler_HandleNotificationHTTP(t *testing.T) {
 
 		resp := w.Result()
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "HandleNotificationHTTP() status")
+	})
+
+	t.Run("custom response", func(t *testing.T) {
+		// Test with custom response structure
+		customHandler := v2.NewNotificationWebhookHandler("secret", func(msg *notification.NotificationMessage) (interface{}, error) {
+			// Return custom response
+			return map[string]interface{}{
+				"notificationId": msg.ID,
+				"status":         "PROCESSED",
+				"message":        "Successfully processed notification",
+				"recordCount":    len(msg.RecordEvents),
+			}, nil
+		})
+
+		payload := `[{"id": "opendes:dataset:1.0.0", "kind": "opendes:wks:dataset:1.0.0", "op": "create"}]`
+		req := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(payload))
+		w := httptest.NewRecorder()
+
+		customHandler.HandleNotificationHTTP(w, req)
+
+		resp := w.Result()
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "HandleNotificationHTTP() status")
+
+		var response map[string]interface{}
+		err := json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err, "json.Decode() should not error")
+		assert.Equal(t, "PROCESSED", response["status"], "Custom status should be returned")
+		assert.Equal(t, "Successfully processed notification", response["message"], "Custom message should be returned")
+		assert.Equal(t, float64(1), response["recordCount"], "Record count should be included")
 	})
 }
 

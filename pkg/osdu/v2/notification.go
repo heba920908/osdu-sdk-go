@@ -154,16 +154,24 @@ func extractDataPartitionID(recordID string) string {
 
 // NotificationWebhookHandler provides HTTP handler functions for notification webhooks
 // These can be used with any HTTP router (net/http, gorilla/mux, chi, etc.)
+// This is a reference implementation - clients should implement their own handlers for production use
 type NotificationWebhookHandler struct {
 	handler NotificationHandler
 	secret  string
 	logger  *slog.Logger
 	// Optional callback to process received notifications
-	OnNotification func(*notification.NotificationMessage) error
+	// Returns (response interface{}, error)
+	// If response is nil, a default NotificationHandlerResponse will be used
+	// The response will be JSON encoded and sent back to the caller
+	OnNotification func(*notification.NotificationMessage) (interface{}, error)
 }
 
 // NewNotificationWebhookHandler creates a new webhook handler
-func NewNotificationWebhookHandler(secret string, onNotification func(*notification.NotificationMessage) error) *NotificationWebhookHandler {
+// This is a reference implementation. For production use, clients should:
+// 1. Use NotificationHandler directly for parsing/validation
+// 2. Implement their own HTTP handlers with custom response logic
+// 3. Handle errors and responses according to their requirements
+func NewNotificationWebhookHandler(secret string, onNotification func(*notification.NotificationMessage) (interface{}, error)) *NotificationWebhookHandler {
 	return &NotificationWebhookHandler{
 		handler:        NewNotificationHandler(),
 		secret:         secret,
@@ -233,17 +241,20 @@ func (nwh *NotificationWebhookHandler) HandleNotificationHTTP(w http.ResponseWri
 	}
 
 	// Call the callback if provided
+	var response interface{}
 	if nwh.OnNotification != nil {
 		nwh.logger.Debug("Processing notification",
 			"notificationId", msg.ID,
 			"subject", msg.Subject)
-		if err := nwh.OnNotification(msg); err != nil {
+		customResponse, err := nwh.OnNotification(msg)
+		if err != nil {
 			nwh.logger.Error("Failed to process notification",
 				"error", err,
 				"notificationId", msg.ID)
 			http.Error(w, "Failed to process notification", http.StatusInternalServerError)
 			return
 		}
+		response = customResponse
 	}
 
 	nwh.logger.Info("Notification processed successfully",
@@ -251,10 +262,12 @@ func (nwh *NotificationWebhookHandler) HandleNotificationHTTP(w http.ResponseWri
 		"subject", msg.Subject,
 		"recordCount", len(msg.RecordEvents))
 
-	// Send success response
-	response := notification.NotificationHandlerResponse{
-		NotificationID: msg.ID,
-		Status:         "OK",
+	// Use custom response if provided, otherwise use default
+	if response == nil {
+		response = notification.NotificationHandlerResponse{
+			NotificationID: msg.ID,
+			Status:         "OK",
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
