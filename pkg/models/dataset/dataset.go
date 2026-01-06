@@ -1,4 +1,4 @@
-package models
+package dataset
 
 // OSDUDatasetResponse represents the structure of the OSDU dataset output response
 type DatasetStorageInstructionsResponse struct {

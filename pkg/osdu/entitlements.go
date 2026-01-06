@@ -5,14 +5,11 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
-	"time"
 
-	retry "github.com/avast/retry-go"
 	"github.com/heba920908/osdu-sdk-go/pkg/models"
 )
 
@@ -33,43 +30,32 @@ func (a OsduApiRequest) EntitlementsBootstrap() error {
 	j, _ := json.MarshalIndent(boostrap_request, "", "  ")
 	slog.Info(string(j))
 
-	err = retry.Do(
-		func() error {
-			req, _ := http.NewRequest("POST", bootstrap_url, bytes.NewBuffer([]byte(json_content)))
-			headers, err := a._build_headers_with_partition()
-			if err != nil {
-				return err
-			}
+	req, _ := http.NewRequest("POST", bootstrap_url, bytes.NewBuffer([]byte(json_content)))
+	headers, err := a._build_headers_with_partition()
+	if err != nil {
+		return err
+	}
 
-			req.Header = headers
+	req.Header = headers
 
-			http_client := http.Client{}
+	http_client := http.Client{}
 
-			res, err := http_client.Do(req)
-			if err != nil {
-				slog.ErrorContext(ctx, err.Error())
-				return err
-			}
-			slog.InfoContext(ctx, fmt.Sprintf("Entitlements Boostrap Code: %d", res.StatusCode))
-			defer res.Body.Close()
-			body, err := io.ReadAll(res.Body)
-			if err != nil {
-				slog.ErrorContext(ctx, err.Error())
-			}
-			slog.DebugContext(ctx, string(body))
-			if res.StatusCode != http.StatusOK {
-				return errors.New("not 200 response")
-			}
-			return nil
-		},
-		retry.Attempts(3),
-		retry.Delay(10*time.Second),
-		retry.OnRetry(func(n uint, err error) {
-			slog.WarnContext(ctx, fmt.Sprintf("retry #%d: %s\n", n, err))
-		}),
-	)
-
-	return err
+	res, err := http_client.Do(req)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return err
+	}
+	slog.InfoContext(ctx, fmt.Sprintf("Entitlements Boostrap Code: %d", res.StatusCode))
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+	}
+	slog.DebugContext(ctx, string(body))
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("entitlements bootstrap failed with status %d: %s", res.StatusCode, string(body))
+	}
+	return nil
 }
 
 func (a OsduApiRequest) EntitlementsCreateAdminUser(user_email string) error {
@@ -95,49 +81,38 @@ func (a OsduApiRequest) EntitlementsCreateAdminUser(user_email string) error {
 
 	headers, _ := a._build_headers_with_partition()
 
-	err = retry.Do(
-		func() error {
-			for _, group := range entitlement_groups {
-				entitlements_url := fmt.Sprintf("%s/groups/%s@%s.%s/members",
-					a.osduSettings.EntitlementsUrl,
-					group,
-					a.osduSettings.PartitionId,
-					a.osduSettings.EntitlementsDomain)
-				req, _ := http.NewRequest("POST", entitlements_url, bytes.NewBuffer([]byte(json_content)))
-				slog.InfoContext(ctx, fmt.Sprintf("[CreateEntitlementsAdminUser] POST: %s", entitlements_url))
-				req.Header = headers
+	for _, group := range entitlement_groups {
+		entitlements_url := fmt.Sprintf("%s/groups/%s@%s.%s/members",
+			a.osduSettings.EntitlementsUrl,
+			group,
+			a.osduSettings.PartitionId,
+			a.osduSettings.EntitlementsDomain)
+		req, _ := http.NewRequest("POST", entitlements_url, bytes.NewBuffer([]byte(json_content)))
+		slog.InfoContext(ctx, fmt.Sprintf("[CreateEntitlementsAdminUser] POST: %s", entitlements_url))
+		req.Header = headers
 
-				http_client := http.Client{}
+		http_client := http.Client{}
 
-				res, err := http_client.Do(req)
-				if err != nil {
-					slog.Error(err.Error())
-					return err
-				}
-				slog.InfoContext(ctx, fmt.Sprintf("[CreateEntitlementsAdminUser] User: %s | Group: %s | Code: %d",
-					user_email,
-					group,
-					res.StatusCode))
-				defer res.Body.Close()
-				body, err := io.ReadAll(res.Body)
-				if err != nil {
-					slog.Error(err.Error())
-				}
-				slog.DebugContext(ctx, string(body))
-				if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusConflict {
-					return errors.New("not 200 nor 409 response")
-				}
-			}
-			return nil
-		},
-		retry.Attempts(3),
-		retry.Delay(10*time.Second),
-		retry.OnRetry(func(n uint, err error) {
-			slog.WarnContext(ctx, fmt.Sprintf("retry #%d: %s\n", n, err))
-		}),
-	)
-
-	return err
+		res, err := http_client.Do(req)
+		if err != nil {
+			slog.Error(err.Error())
+			return err
+		}
+		slog.InfoContext(ctx, fmt.Sprintf("[CreateEntitlementsAdminUser] User: %s | Group: %s | Code: %d",
+			user_email,
+			group,
+			res.StatusCode))
+		defer res.Body.Close()
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			slog.Error(err.Error())
+		}
+		slog.DebugContext(ctx, string(body))
+		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusConflict {
+			return fmt.Errorf("failed to add user to group %s with status %d: %s", group, res.StatusCode, string(body))
+		}
+	}
+	return nil
 }
 
 func (a OsduApiRequest) EntitlementsCreateGroup(group_id string, user_ids []string) error {
@@ -161,54 +136,38 @@ func (a OsduApiRequest) EntitlementsCreateGroup(group_id string, user_ids []stri
 	slog.InfoContext(ctx, fmt.Sprintf("Create Group URL: %s", create_group_url))
 	slog.DebugContext(ctx, string(j))
 
-	err = retry.Do(
-		func() error {
-			req, err := http.NewRequest("POST", create_group_url, bytes.NewBuffer(json_content))
-			if err != nil {
-				return err
-			}
-
-			headers, err := a._build_headers_with_partition()
-			if err != nil {
-				return err
-			}
-			req.Header = headers
-
-			http_client := http.Client{}
-			res, err := http_client.Do(req)
-			if err != nil {
-				slog.ErrorContext(ctx, err.Error())
-				return err
-			}
-			defer res.Body.Close()
-
-			body, err := io.ReadAll(res.Body)
-			if err != nil {
-				slog.ErrorContext(ctx, err.Error())
-			}
-			slog.DebugContext(ctx, string(body))
-
-			slog.InfoContext(ctx, fmt.Sprintf("Created GroupId: %s | Entitlements Response: %d", group_id, res.StatusCode))
-
-			if res.StatusCode == http.StatusConflict {
-				slog.WarnContext(ctx, fmt.Sprintf("Group %s already exists", group_id))
-				return nil
-			}
-
-			if res.StatusCode > http.StatusCreated {
-				return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-			}
-			return nil
-		},
-		retry.Attempts(3),
-		retry.Delay(5*time.Second),
-		retry.OnRetry(func(n uint, err error) {
-			slog.WarnContext(ctx, fmt.Sprintf("retry #%d: %s", n, err))
-		}),
-	)
-
+	req, err := http.NewRequest("POST", create_group_url, bytes.NewBuffer(json_content))
 	if err != nil {
 		return err
+	}
+
+	headers, err := a._build_headers_with_partition()
+	if err != nil {
+		return err
+	}
+	req.Header = headers
+
+	http_client := http.Client{}
+	res, err := http_client.Do(req)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+	}
+	slog.DebugContext(ctx, string(body))
+
+	slog.InfoContext(ctx, fmt.Sprintf("Created GroupId: %s | Entitlements Response: %d", group_id, res.StatusCode))
+
+	if res.StatusCode == http.StatusConflict {
+		slog.WarnContext(ctx, fmt.Sprintf("Group %s already exists", group_id))
+		// Continue to add users even if group already exists
+	} else if res.StatusCode > http.StatusCreated {
+		return fmt.Errorf("failed to create group %s with status %d: %s", group_id, res.StatusCode, string(body))
 	}
 
 	// Add users to the group
@@ -248,49 +207,40 @@ func (a OsduApiRequest) _create_owner_member_group(group_id, user_id string) err
 	slog.InfoContext(ctx, fmt.Sprintf("Add user URL: %s", add_user_url))
 	slog.DebugContext(ctx, string(j))
 
-	return retry.Do(
-		func() error {
-			req, err := http.NewRequest("POST", add_user_url, bytes.NewBuffer(json_content))
-			if err != nil {
-				return err
-			}
+	req, err := http.NewRequest("POST", add_user_url, bytes.NewBuffer(json_content))
+	if err != nil {
+		return err
+	}
 
-			headers, err := a._build_headers_with_partition()
-			if err != nil {
-				return err
-			}
-			req.Header = headers
+	headers, err := a._build_headers_with_partition()
+	if err != nil {
+		return err
+	}
+	req.Header = headers
 
-			http_client := http.Client{}
-			res, err := http_client.Do(req)
-			if err != nil {
-				slog.ErrorContext(ctx, err.Error())
-				return err
-			}
-			defer res.Body.Close()
+	http_client := http.Client{}
+	res, err := http_client.Do(req)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+		return err
+	}
+	defer res.Body.Close()
 
-			body, err := io.ReadAll(res.Body)
-			if err != nil {
-				slog.ErrorContext(ctx, err.Error())
-			}
-			slog.DebugContext(ctx, string(body))
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		slog.ErrorContext(ctx, err.Error())
+	}
+	slog.DebugContext(ctx, string(body))
 
-			slog.InfoContext(ctx, fmt.Sprintf("[Entitlements] OWNER Member Created - UserId: %s | GroupId: %s | Entitlements Response: %d", user_id, entitlements_group, res.StatusCode))
+	slog.InfoContext(ctx, fmt.Sprintf("[Entitlements] OWNER Member Created - UserId: %s | GroupId: %s | Entitlements Response: %d", user_id, entitlements_group, res.StatusCode))
 
-			if res.StatusCode == http.StatusConflict {
-				slog.WarnContext(ctx, fmt.Sprintf("User %s already exists in group %s", user_id, entitlements_group))
-				return nil
-			}
+	if res.StatusCode == http.StatusConflict {
+		slog.WarnContext(ctx, fmt.Sprintf("User %s already exists in group %s", user_id, entitlements_group))
+		return nil
+	}
 
-			if res.StatusCode > http.StatusCreated {
-				return fmt.Errorf("unexpected status code: %d", res.StatusCode)
-			}
-			return nil
-		},
-		retry.Attempts(3),
-		retry.Delay(5*time.Second),
-		retry.OnRetry(func(n uint, err error) {
-			slog.WarnContext(ctx, fmt.Sprintf("retry #%d: %s", n, err))
-		}),
-	)
+	if res.StatusCode > http.StatusCreated {
+		return fmt.Errorf("failed to add user %s to group %s with status %d: %s", user_id, entitlements_group, res.StatusCode, string(body))
+	}
+	return nil
 }

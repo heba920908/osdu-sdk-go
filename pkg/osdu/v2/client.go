@@ -18,6 +18,9 @@ type OsduClient interface {
 	// Register returns the register service interface
 	Register() RegisterService
 
+	// Dataset returns the dataset service interface
+	Dataset() DatasetService
+
 	// Context returns the context for requests
 	Context() context.Context
 
@@ -175,6 +178,11 @@ func (c *Client) Logger() *slog.Logger {
 // Register returns the register service
 func (c *Client) Register() RegisterService {
 	return &registerService{client: c}
+}
+
+// Dataset returns the dataset service
+func (c *Client) Dataset() DatasetService {
+	return &datasetService{client: c}
 }
 
 // buildHeaders builds HTTP headers with authorization

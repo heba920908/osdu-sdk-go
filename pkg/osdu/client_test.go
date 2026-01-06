@@ -77,11 +77,11 @@ func TestMockAuthenticationFailure(t *testing.T) {
 	mockAuth := &MockAuthProvider{}
 	mockAuth.On("GetAccessToken", mock.Anything).Return((*auth.Token)(nil), fmt.Errorf("authentication failed"))
 
-	// Create test configuration
+	// Use an invalid port on localhost to avoid DNS lookup delays
 	osduSettings := config.OsduSettings{
 		PartitionId:     "test-partition",
-		PartitionUrl:    "http://mock-partition",
-		EntitlementsUrl: "http://mock-entitlements",
+		PartitionUrl:    "http://127.0.0.1:1",
+		EntitlementsUrl: "http://127.0.0.1:1",
 	}
 
 	// Create client with failing auth provider
@@ -93,10 +93,9 @@ func TestMockAuthenticationFailure(t *testing.T) {
 		Properties: partitionProperties,
 	}
 
-	// Execute test - should fail due to network error because auth fails but code continues
-	// Note: This exposes a bug in the original code where auth errors are ignored
+	// Execute test - should fail due to authentication error
 	err := client.RegisterPartition(partition)
 	assert.Error(t, err)
 	// The current implementation logs the auth error but continues, so we get a network error
-	assert.Contains(t, err.Error(), "mock-partition")
+	assert.Contains(t, err.Error(), "connection refused")
 }

@@ -85,7 +85,7 @@ func TestPutSystemSchema_HttpError(t *testing.T) {
 
 	// Verify results
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "[test-schema-456] schema unexpected status code: 500")
+	assert.Contains(t, err.Error(), "[test-schema-456] schema upload failed with status code: 500")
 	mockAuth.AssertExpectations(t)
 }
 
@@ -202,20 +202,11 @@ func TestPutSystemSchema_EmptyPayload(t *testing.T) {
 	mockAuth.AssertExpectations(t)
 }
 
-func TestPutSystemSchema_WithRetry(t *testing.T) {
-	callCount := 0
-	// Create a mock server that fails twice then succeeds
+func TestPutSystemSchema_ServerError(t *testing.T) {
+	// Create a mock server that returns server error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		callCount++
-		if callCount <= 2 {
-			// Fail the first two attempts
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "Temporary server error"}`))
-		} else {
-			// Succeed on the third attempt
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"status": "success"}`))
-		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error": "Server error"}`))
 	}))
 	defer server.Close()
 
@@ -226,7 +217,7 @@ func TestPutSystemSchema_WithRetry(t *testing.T) {
 	schemaPayload := []byte(`{
 		"schemaInfo": {
 			"schemaIdentity": {
-				"id": "retry-schema-123"
+				"id": "error-schema-123"
 			}
 		},
 		"kind": "test"
@@ -235,9 +226,9 @@ func TestPutSystemSchema_WithRetry(t *testing.T) {
 	// Execute test
 	err := client.PutSystemSchema(schemaPayload)
 
-	// Verify results - should succeed after retries
-	assert.NoError(t, err)
-	assert.Equal(t, 3, callCount) // Should have retried 3 times total
+	// Verify results - should fail immediately without retry
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "schema upload failed")
 	mockAuth.AssertExpectations(t)
 }
 

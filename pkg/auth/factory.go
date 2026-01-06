@@ -19,10 +19,8 @@ func (f *ProviderFactory) CreateProvider(providerType ProviderType, authConfig c
 	switch providerType {
 	case ProviderTypeOpenID:
 		return NewOpenIDProvider(authConfig), nil
-	case ProviderTypeAzure:
-		return NewAzureProvider(authConfig)
 	default:
-		return nil, fmt.Errorf("unsupported provider type: %s", providerType)
+		return nil, fmt.Errorf("unsupported provider type: %s. Note: Azure provider has been moved to examples/auth_azure_mod_example - see examples for custom provider implementation", providerType)
 	}
 }
 

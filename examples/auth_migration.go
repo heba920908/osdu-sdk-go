@@ -23,26 +23,11 @@ func main() {
 	clientWithOpenID := osdu.NewClientWithProvider(openidProvider)
 	fmt.Printf("Client created with OpenID provider: %+v\n", clientWithOpenID)
 
-	// Example 3: Using Azure provider
-	fmt.Println("\n=== Azure Provider Example ===")
-	azureProvider, err := auth.NewAzureProvider(authSettings)
-	if err != nil {
-		log.Printf("Failed to create Azure provider: %s", err)
-	} else {
-		clientWithAzure := osdu.NewClientWithProvider(azureProvider)
-		fmt.Printf("Client created with Azure provider: %+v\n", clientWithAzure)
-
-		// Test Azure token retrieval (this will work with proper config)
-		fmt.Println("\n=== Testing Azure Token Retrieval ===")
-		azureToken, err := azureProvider.GetAccessToken(context.Background())
-		if err != nil {
-			log.Printf("Failed to get Azure token: %s", err)
-		} else {
-			fmt.Printf("Azure token retrieved successfully. Length: %d\n", len(azureToken.AccessToken))
-			fmt.Printf("Azure token type: %s\n", azureToken.TokenType)
-			fmt.Printf("Azure token expires at: %s\n", azureToken.ExpiresAt)
-		}
-	}
+	// Example 3: Custom Authentication Provider
+	fmt.Println("\n=== Custom Provider Example ===")
+	fmt.Println("For Azure authentication, see: examples/auth_azure_mod_example/")
+	fmt.Println("You can implement custom providers by implementing the auth.AuthProvider interface")
+	fmt.Println("This keeps the main library lightweight while allowing full customization")
 
 	// Example 4: Testing token retrieval
 	fmt.Println("\n=== Testing Token Retrieval ===")

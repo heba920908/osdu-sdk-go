@@ -1,4 +1,4 @@
-package models
+package file
 
 type FileGetSignedUrlResponse struct {
 	FileID               string `json:"FileID"`

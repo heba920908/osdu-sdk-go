@@ -1,4 +1,4 @@
-package auth
+package azureprovider
 
 import (
 	"context"
@@ -14,14 +14,16 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/heba920908/osdu-sdk-go/pkg/auth"
 	"github.com/heba920908/osdu-sdk-go/pkg/config"
 )
 
-// AzureProvider implements the AuthProvider interface for Azure Active Directory
+// AzureProvider implements the auth.AuthProvider interface for Azure Active Directory
+// This is a standalone implementation that can be used as a reference or copied into your project
 type AzureProvider struct {
 	config       config.AuthSettings
 	credential   azcore.TokenCredential
-	currentToken *Token
+	currentToken *auth.Token
 	scopes       []string
 }
 
@@ -65,7 +67,7 @@ func NewAzureProvider(authConfig config.AuthSettings) (*AzureProvider, error) {
 }
 
 // GetAccessToken retrieves an access token using Azure SDK or OAuth2
-func (p *AzureProvider) GetAccessToken(ctx context.Context) (*Token, error) {
+func (p *AzureProvider) GetAccessToken(ctx context.Context) (*auth.Token, error) {
 	slog.DebugContext(ctx, fmt.Sprintf("Azure Auth: Expire - %v", p.currentToken))
 
 	if p.IsTokenValid() {
@@ -90,7 +92,7 @@ func (p *AzureProvider) GetAccessToken(ctx context.Context) (*Token, error) {
 }
 
 // getTokenWithAzureSDK uses Azure SDK for authentication
-func (p *AzureProvider) getTokenWithAzureSDK(ctx context.Context) (*Token, error) {
+func (p *AzureProvider) getTokenWithAzureSDK(ctx context.Context) (*auth.Token, error) {
 	slog.InfoContext(ctx, "Azure - Using Azure SDK authentication")
 
 	tokenRequestOptions := policy.TokenRequestOptions{
@@ -109,7 +111,7 @@ func (p *AzureProvider) getTokenWithAzureSDK(ctx context.Context) (*Token, error
 	}
 
 	// Convert Azure token to our generic Token structure
-	token := &Token{
+	token := &auth.Token{
 		AccessToken: accessToken.Token,
 		TokenType:   "Bearer",
 		ExpiresAt:   accessToken.ExpiresOn,
@@ -125,7 +127,7 @@ func (p *AzureProvider) getTokenWithAzureSDK(ctx context.Context) (*Token, error
 }
 
 // getTokenWithOAuth2 uses OAuth2 flow for authentication (fallback)
-func (p *AzureProvider) getTokenWithOAuth2(ctx context.Context) (*Token, error) {
+func (p *AzureProvider) getTokenWithOAuth2(ctx context.Context) (*auth.Token, error) {
 	slog.InfoContext(ctx, "Azure - Using OAuth2 flow authentication")
 
 	formVals := url.Values{}
@@ -167,7 +169,7 @@ func (p *AzureProvider) getTokenWithOAuth2(ctx context.Context) (*Token, error) 
 		return nil, fmt.Errorf("error while trying to read token json body: %w", err)
 	}
 
-	var token Token
+	var token auth.Token
 	err = json.Unmarshal(body, &token)
 	if err != nil {
 		return nil, fmt.Errorf("error while trying to parse token json body: %w", err)
@@ -196,7 +198,7 @@ func (p *AzureProvider) IsTokenValid() bool {
 }
 
 // RefreshToken attempts to refresh the current token
-func (p *AzureProvider) RefreshToken(ctx context.Context) (*Token, error) {
+func (p *AzureProvider) RefreshToken(ctx context.Context) (*auth.Token, error) {
 	// For Azure SDK, just request a new token (SDK handles refresh automatically)
 	if p.config.SdkAuth || p.credential != nil {
 		return p.getTokenWithAzureSDK(ctx)

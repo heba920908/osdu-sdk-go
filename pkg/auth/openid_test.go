@@ -230,10 +230,11 @@ func TestOpenIDProvider_GetAccessToken_InvalidJSON(t *testing.T) {
 }
 
 func TestOpenIDProvider_GetAccessToken_NetworkError(t *testing.T) {
+	// Use an invalid port on localhost to avoid DNS lookup delays
 	authConfig := config.AuthSettings{
 		ClientId:     "test-client-id",
 		ClientSecret: "test-client-secret",
-		TokenUrl:     "http://invalid-url-that-should-not-exist.local",
+		TokenUrl:     "http://127.0.0.1:1",
 		GrantType:    "client_credentials",
 		Scopes:       []string{"openid", "profile"},
 	}

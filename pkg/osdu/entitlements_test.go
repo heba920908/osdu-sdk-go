@@ -37,21 +37,12 @@ func TestMockEntitlementsBootstrap(t *testing.T) {
 			expectError: false,
 		},
 		{
-			name: "retry and eventual success",
-			serverResponse: func() func(http.ResponseWriter, *http.Request) {
-				callCount := 0
-				return func(w http.ResponseWriter, r *http.Request) {
-					callCount++
-					if callCount < 2 {
-						w.WriteHeader(http.StatusInternalServerError)
-						w.Write([]byte(`{"error": "Temporary error"}`))
-					} else {
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte(`{"message": "Bootstrap completed"}`))
-					}
-				}
-			}(),
-			expectError: false,
+			name: "server error without retry",
+			serverResponse: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(`{"error": "Internal server error"}`))
+			},
+			expectError: true,
 		},
 	}
 

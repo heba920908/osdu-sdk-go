@@ -156,20 +156,11 @@ func TestWorkflowService_RegisterWorkflow_AuthenticationFailure(t *testing.T) {
 	mockAuth.AssertExpectations(t)
 }
 
-func TestWorkflowService_RegisterWorkflow_WithRetry(t *testing.T) {
-	callCount := 0
-	// Create a mock server that fails twice then succeeds
+func TestWorkflowService_RegisterWorkflow_ServerError(t *testing.T) {
+	// Create a mock server that returns server error
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		callCount++
-		if callCount <= 2 {
-			// Fail the first two attempts
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "Temporary server error"}`))
-		} else {
-			// Succeed on the third attempt
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"status": "success"}`))
-		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error": "Server error"}`))
 	}))
 	defer server.Close()
 
@@ -179,19 +170,19 @@ func TestWorkflowService_RegisterWorkflow_WithRetry(t *testing.T) {
 
 	// Create test workflow
 	workflow := models.RegisterWorkflow{
-		WorkflowName: "retry-workflow-service",
-		Description:  "Test workflow with retry via service",
+		WorkflowName: "error-workflow-service",
+		Description:  "Test workflow with server error",
 		RegistrationInstructions: models.RegistrationInstructions{
-			DagName: "retry-dag-service",
+			DagName: "error-dag-service",
 		},
 	}
 
 	// Execute test
 	err := workflowService.RegisterWorkflow(workflow)
 
-	// Verify results - should succeed after retries
-	assert.NoError(t, err)
-	assert.Equal(t, 3, callCount) // Should have retried 3 times total
+	// Verify results - should fail immediately without retry
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "workflow service response")
 }
 
 func TestWorkflowService_RegisterWorkflow_EmptyPayload(t *testing.T) {

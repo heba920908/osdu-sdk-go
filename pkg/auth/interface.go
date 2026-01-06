@@ -74,5 +74,6 @@ type ProviderType string
 
 const (
 	ProviderTypeOpenID ProviderType = "openid"
-	ProviderTypeAzure  ProviderType = "azure"
+	// Note: Azure provider has been moved to examples/auth_azure_mod_example
+	// You can implement custom providers by implementing the AuthProvider interface
 )
