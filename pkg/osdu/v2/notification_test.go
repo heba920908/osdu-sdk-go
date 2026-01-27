@@ -461,3 +461,17 @@ func TestNotificationWebhookHandler_HandleHealthHTTP(t *testing.T) {
 		assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode, "HandleHealthHTTP() status")
 	})
 }
+
+// https://community.opengroup.org/osdu/platform/system/register/-/blob/v0.26.0/provider/register-azure/src/main/resources/application.properties?ref_type=tags#L73
+// Test with hardcoded secret, which should return always the same response for given crc
+func TestComputeChallengeResponse_DefaultSecret(t *testing.T) {
+	handler := v2.NewNotificationHandler()
+	secret := "395f1b05e95171d7c0dde0b19fd6cf"
+	crc := "test-crc-12345"
+
+	result := handler.ComputeChallengeResponse(crc, secret)
+	expected := getExpectedChallengeResponse(secret, crc)
+
+	t.Logf("Response hash: %s", result)
+	assert.Equal(t, expected, result)
+}
