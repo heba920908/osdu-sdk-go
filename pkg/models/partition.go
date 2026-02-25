@@ -52,12 +52,6 @@ type PartitionProperties struct {
 	ElasticsearchPassword         PartitionProperty `json:"elasticsearch.8.password,omitempty"`
 	ElasticsearchHttps            PartitionProperty `json:"elasticsearch.8.https,omitempty"`
 	ElasticsearchTls              PartitionProperty `json:"elasticsearch.8.tls,omitempty"`
-	ElasticsearchSevenHost        PartitionProperty `json:"elasticsearch.host,omitempty"`
-	ElasticsearchSevenPort        PartitionProperty `json:"elasticsearch.port,omitempty"`
-	ElasticsearchSevenUser        PartitionProperty `json:"elasticsearch.user,omitempty"`
-	ElasticsearchSevenPassword    PartitionProperty `json:"elasticsearch.password,omitempty"`
-	ElasticsearchSevenHttps       PartitionProperty `json:"elasticsearch.https,omitempty"`
-	ElasticsearchSevenTls         PartitionProperty `json:"elasticsearch.tls,omitempty"`
 	IndexAugmenterEnabled         PartitionProperty `json:"index-augmenter-enabled,omitempty"`
 	FeatureFlagPolicyEnabled      PartitionProperty `json:"featureFlag.policy.enabled,omitempty"`
 	FeatureFlagOpaEnabled         PartitionProperty `json:"featureFlag.opa.enabled,omitempty"`
