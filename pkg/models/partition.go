@@ -212,10 +212,10 @@ func GetDefaultPartitionPropertiesCI(partition_id string) PartitionProperties {
 	root.ElasticsearchPassword.Sensitive = true
 
 	root.ElasticsearchHttps.Value = "false"
-	root.ElasticsearchPassword.Sensitive = false
+	root.ElasticsearchHttps.Sensitive = false
 
 	root.ElasticsearchTls.Value = "false"
-	root.ElasticsearchPassword.Sensitive = false
+	root.ElasticsearchTls.Sensitive = false
 
 	root.IndexAugmenterEnabled.Value = "false"
 	root.IndexAugmenterEnabled.Sensitive = false
