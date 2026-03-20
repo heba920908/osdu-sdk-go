@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	fmt.Println("=== Azure Authentication Provider Example ===\n")
+	fmt.Println("=== Azure Authentication Provider Example ===")
 
 	// Load configuration
 	authSettings, err := config.GetAuthSettings()

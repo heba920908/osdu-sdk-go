@@ -1,6 +1,6 @@
 module github.com/heba920908/osdu-sdk-go/examples/auth_azure_mod_example
 
-go 1.24
+go 1.25
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.18.2
