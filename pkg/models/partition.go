@@ -34,6 +34,11 @@ type PartitionProperties struct {
 	ObmMinioSecretKey             PartitionProperty `json:"obm.minio.secretKey,omitempty"`
 	ObmMinioIgnoreCertCheck       PartitionProperty `json:"obm.minio.ignoreCertCheck,omitempty"`
 	ObmMinioUiEndpoint            PartitionProperty `json:"obm.minio.ui.endpoint,omitempty"`
+	ObmS3Endpoint                 PartitionProperty `json:"obm.s3.endpoint,omitempty"`
+	ObmS3AccessKey                PartitionProperty `json:"obm.s3.accessKey,omitempty"`
+	ObmS3SecretKey                PartitionProperty `json:"obm.s3.secretKey,omitempty"`
+	ObmS3Region                   PartitionProperty `json:"obm.s3.region,omitempty"`
+	ObmS3NativeChecksumEnabled    PartitionProperty `json:"obm.s3.nativeChecksumEnabled,omitempty"`
 	KubernetesSecretName          PartitionProperty `json:"kubernetes-secret-name,omitempty"`
 	OqmRabbitmqAmqpHost           PartitionProperty `json:"oqm.rabbitmq.amqp.host,omitempty"`
 	OqmRabbitmqAmqpPort           PartitionProperty `json:"oqm.rabbitmq.amqp.port,omitempty"`
@@ -162,6 +167,21 @@ func GetDefaultPartitionPropertiesCI(partition_id string) PartitionProperties {
 
 	root.ObmMinioUiEndpoint.Value = "s3"
 	root.ObmMinioUiEndpoint.Sensitive = false
+
+	root.ObmS3Endpoint.Value = ""
+	root.ObmS3Endpoint.Sensitive = false
+
+	root.ObmS3AccessKey.Value = ""
+	root.ObmS3AccessKey.Sensitive = true
+
+	root.ObmS3SecretKey.Value = ""
+	root.ObmS3SecretKey.Sensitive = true
+
+	root.ObmS3Region.Value = ""
+	root.ObmS3Region.Sensitive = false
+
+	root.ObmS3NativeChecksumEnabled.Value = ""
+	root.ObmS3NativeChecksumEnabled.Sensitive = false
 
 	root.KubernetesSecretName.Value = "eds-osdu"
 	root.KubernetesSecretName.Sensitive = false
