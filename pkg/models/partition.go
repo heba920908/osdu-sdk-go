@@ -40,6 +40,7 @@ type PartitionProperties struct {
 	ObmS3Region                   PartitionProperty `json:"obm.s3.region,omitempty"`
 	ObmS3NativeChecksumEnabled    PartitionProperty `json:"obm.s3.nativeChecksumEnabled,omitempty"`
 	KubernetesSecretName          PartitionProperty `json:"kubernetes-secret-name,omitempty"`
+	CollaborationsEnabled         PartitionProperty `json:"collaborations.enabled,omitempty"`
 	OqmRabbitmqAmqpHost           PartitionProperty `json:"oqm.rabbitmq.amqp.host,omitempty"`
 	OqmRabbitmqAmqpPort           PartitionProperty `json:"oqm.rabbitmq.amqp.port,omitempty"`
 	OqmRabbitmqAmqpPath           PartitionProperty `json:"oqm.rabbitmq.amqp.path,omitempty"`
