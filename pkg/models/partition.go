@@ -75,6 +75,8 @@ type PartitionProperties struct {
 	EntitlementsDatasourcePassword PartitionProperty `json:"entitlements.datasource.password,omitempty"`
 	EntitlementsDatasourceSchema   PartitionProperty `json:"entitlements.datasource.schema,omitempty"`
 	SystemSchemaBucketName         PartitionProperty `json:"system.schema.bucket.name,omitempty"`
+	// Needed by secret service
+	SdKsdK8sNamespace PartitionProperty `json:"sd.ksd.k8s.namespace,omitempty"`
 
 	/*
 	  Known properties for azure
